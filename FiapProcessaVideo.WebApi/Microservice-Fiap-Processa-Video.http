@@ -1,0 +1,6 @@
+@Microservice_Fiap_Processa_Video_HostAddress = http://localhost:5145
+
+GET {{Microservice_Fiap_Processa_Video_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
