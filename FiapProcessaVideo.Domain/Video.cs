@@ -2,6 +2,7 @@
 {
     public sealed class Video
     {
+        public Guid Id { get; set; }
         // Diretório do arquivo a ser processado
         public string FilePath { get; private set; }
 

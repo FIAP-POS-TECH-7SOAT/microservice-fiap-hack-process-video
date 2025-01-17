@@ -1,6 +1,9 @@
 using DotNetEnv;
 using FiapProcessaVideo.WebApi.Services;
+using FiapProcessaVideo.Application.UseCases;
 using RabbitMQ.Client;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon.S3;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +22,16 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
     serverOptions.ListenAnyIP(Convert.ToInt32(Environment.GetEnvironmentVariable("PORT")));
 });
 
+// Define AWS credentials and region
+var awsOptions = new AWSOptions
+{
+    Credentials = new Amazon.Runtime.BasicAWSCredentials("access-key-id", "secret-access-key"),
+    Region = Amazon.RegionEndpoint.USEast1 // Replace with your region
+};
+
+// Register AWS services with specified options
+builder.Services.AddDefaultAWSOptions(awsOptions);
+builder.Services.AddAWSService<IAmazonS3>();
 //RabbitMQ
 //---------------------------------------------------------------------------
 // string queueName = Environment.GetEnvironmentVariable("AMQP_QUEUE");
@@ -48,7 +61,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 // Register connection and channel in DI container
 // builder.Services.AddSingleton<IConnection>(connection);
 // builder.Services.AddSingleton<IModel>(channel);
-
+builder.Services.AddScoped<IProcessVideoUseCase, ProcessVideoUseCase>();
 // Register RabbitMQ consumer service
 // builder.Services.AddHostedService<RabbitMqConsumerService>();
 //---------------------------------------------------------------------------
