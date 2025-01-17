@@ -4,6 +4,8 @@ using FiapProcessaVideo.Application.UseCases;
 using RabbitMQ.Client;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.S3;
+using Amazon.Runtime;
+using Amazon;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,16 +24,30 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
     serverOptions.ListenAnyIP(Convert.ToInt32(Environment.GetEnvironmentVariable("PORT")));
 });
 
-// Define AWS credentials and region
-var awsOptions = new AWSOptions
-{
-    Credentials = new Amazon.Runtime.BasicAWSCredentials("access-key-id", "secret-access-key"),
-    Region = Amazon.RegionEndpoint.USEast1 // Replace with your region
-};
+//AWS
+//---------------------------------------------------------------------------
+string bucketName = "fiap-processa-video-s3";
+string videoKey = "video-file-key";
 
 // Register AWS services with specified options
-builder.Services.AddDefaultAWSOptions(awsOptions);
-builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+{
+    string accessKeyId = "access-key-id";
+    string secretAccessKey = "secret-access-key";
+    string accessToken = "access-token";
+    RegionEndpoint region = RegionEndpoint.USEast1; // Change to your desired region
+
+    var config = new AmazonS3Config
+    {
+        RegionEndpoint = RegionEndpoint.USEast1, // Set the AWS Region
+        UseHttp = false,                        // Use HTTPS (default is false)
+        ForcePathStyle = true                   // Enable path-style access (e.g., http://s3.amazonaws.com/bucketname)
+    };
+
+    return new AmazonS3Client(accessKeyId, secretAccessKey, accessToken, config);
+});
+//---------------------------------------------------------------------------
+
 //RabbitMQ
 //---------------------------------------------------------------------------
 // string queueName = Environment.GetEnvironmentVariable("AMQP_QUEUE");
