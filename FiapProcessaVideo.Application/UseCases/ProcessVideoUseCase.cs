@@ -24,18 +24,18 @@ namespace FiapProcessaVideo.Application.UseCases
         
         public async Task<string> Execute(Video video)
         {
-            string bucketName = "fiap-processa-video-s3";
+            string bucketName = "";
             string videoKey = "Marvel_DOTNET_CSHARP.mp4";
 
             // 1. Baixar o arquivo de vídeo do S3
-            var videoPath = Path.Combine(Path.GetTempPath(), videoKey);
+            var videoPath = Path.Combine(video.FilePath, videoKey);
             await DownloadFileFromS3Async(bucketName, videoKey, videoPath);
 
-            // 2. Criar pasta temporária para os frames
-            var outputFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            //// 2. Criar pasta temporária para os frames
+            var outputFolder = Path.Combine(video.FilePath, "snapshots");
             Directory.CreateDirectory(outputFolder);
 
-            // 3. Processar o vídeo
+            //// 3. Processar o vídeo
             var videoInfo = FFProbe.Analyse(videoPath);
             var duration = videoInfo.Duration;
             var interval = TimeSpan.FromSeconds(20);
@@ -47,20 +47,20 @@ namespace FiapProcessaVideo.Application.UseCases
                 FFMpeg.Snapshot(videoPath, outputPath, new Size(1920, 1080), currentTime);
             }
 
-            // 4. Criar arquivo ZIP
-            var zipFilePath = Path.Combine(Path.GetTempPath(), "images.zip");
-            ZipFile.CreateFromDirectory(outputFolder, zipFilePath);
+            //// 4. Criar arquivo ZIP
+            //var zipFilePath = Path.Combine(Path.GetTempPath(), "images.zip");
+            //ZipFile.CreateFromDirectory(outputFolder, zipFilePath);
 
-            // 5. Fazer upload do ZIP para o S3
-            var zipKey = Path.Combine("processed", "images.zip");
-            await UploadFileToS3Async(bucketName, zipKey, zipFilePath);
+            //// 5. Fazer upload do ZIP para o S3
+            //var zipKey = Path.Combine("processed", "images.zip");
+            //await UploadFileToS3Async(bucketName, zipKey, zipFilePath);
 
-            // 6. Limpeza de arquivos temporários
-            File.Delete(videoPath);
-            Directory.Delete(outputFolder, true);
-            File.Delete(zipFilePath);
+            //// 6. Limpeza de arquivos temporários
+            //File.Delete(videoPath);
+            //Directory.Delete(outputFolder, true);
+            //File.Delete(zipFilePath);
 
-            return zipKey; // Retorna o caminho do arquivo ZIP no S3
+            return "zipKey"; // Retorna o caminho do arquivo ZIP no S3
         }
 
         private async Task DownloadFileFromS3Async(string bucketName, string key, string filePath)

@@ -26,15 +26,15 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 
 //AWS
 //---------------------------------------------------------------------------
-string bucketName = "fiap-processa-video-s3";
+string bucketName = "bucketname";
 string videoKey = "video-file-key";
 
 // Register AWS services with specified options
 builder.Services.AddSingleton<IAmazonS3>(sp =>
 {
-    string accessKeyId = "access-key-id";
-    string secretAccessKey = "secret-access-key";
-    string accessToken = "access-token";
+    string accessKeyId = "";
+    string secretAccessKey = "";
+    string accessToken = "";
     RegionEndpoint region = RegionEndpoint.USEast1; // Change to your desired region
 
     var config = new AmazonS3Config
