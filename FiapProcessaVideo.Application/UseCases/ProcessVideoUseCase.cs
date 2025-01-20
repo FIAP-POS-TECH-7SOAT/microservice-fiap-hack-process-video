@@ -21,14 +21,14 @@ namespace FiapProcessaVideo.Application.UseCases
         {
             _s3Client = s3Client;
         }
-        
+
         public async Task<string> Execute(Video video)
         {
-            string bucketName = "";
-            string videoKey = "Marvel_DOTNET_CSHARP.mp4";
+            string bucketName = "bucket-name";
+            string videoKey = "video-key.mp4";
 
             // 1. Baixar o arquivo de vídeo do S3
-            var videoPath = Path.Combine(video.FilePath, videoKey);
+            var videoPath = Path.Combine(@"C:\projetos\", videoKey);
             await DownloadFileFromS3Async(bucketName, videoKey, videoPath);
 
             //// 2. Criar pasta temporária para os frames
@@ -47,20 +47,20 @@ namespace FiapProcessaVideo.Application.UseCases
                 FFMpeg.Snapshot(videoPath, outputPath, new Size(1920, 1080), currentTime);
             }
 
-            //// 4. Criar arquivo ZIP
-            //var zipFilePath = Path.Combine(Path.GetTempPath(), "images.zip");
-            //ZipFile.CreateFromDirectory(outputFolder, zipFilePath);
+            // 4. Criar arquivo ZIP
+            var zipFilePath = Path.Combine(@"C:\projetos\", $"images {Guid.NewGuid()}.zip");
+            ZipFile.CreateFromDirectory(outputFolder, zipFilePath);
 
-            //// 5. Fazer upload do ZIP para o S3
-            //var zipKey = Path.Combine("processed", "images.zip");
-            //await UploadFileToS3Async(bucketName, zipKey, zipFilePath);
+            // 5. Fazer upload do ZIP para o S3
+            var zipKey = Path.Combine("processed", "images.zip");
+            await UploadFileToS3Async(bucketName, zipKey, zipFilePath);
 
-            //// 6. Limpeza de arquivos temporários
-            //File.Delete(videoPath);
-            //Directory.Delete(outputFolder, true);
-            //File.Delete(zipFilePath);
+            // 6. Limpeza de arquivos temporários
+            File.Delete(videoPath);
+            Directory.Delete(outputFolder, true);
+            File.Delete(zipFilePath);
 
-            return "zipKey"; // Retorna o caminho do arquivo ZIP no S3
+            return zipKey; // Retorna o caminho do arquivo ZIP no S3
         }
 
         private async Task DownloadFileFromS3Async(string bucketName, string key, string filePath)
