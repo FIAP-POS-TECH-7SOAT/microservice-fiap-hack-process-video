@@ -16,20 +16,23 @@ namespace FiapProcessaVideo.Application.UseCases
     public class ProcessVideoUseCase : IProcessVideoUseCase
     {
         private readonly IAmazonS3 _s3Client;
+        private readonly string _bucketName;
 
         public ProcessVideoUseCase(IAmazonS3 s3Client)
         {
             _s3Client = s3Client;
+
+            // Fetch bucket name from environment variables
+            _bucketName = Environment.GetEnvironmentVariable("S3_BUCKET_NAME");
         }
 
         public async Task<string> Execute(Video video)
         {
-            string bucketName = "bucket-name";
-            string videoKey = "video-key.mp4";
+            string videoKey = video.VideoKey;
 
             // 1. Baixar o arquivo de vídeo do S3
             var videoPath = Path.Combine(@"C:\projetos\", videoKey);
-            await DownloadFileFromS3Async(bucketName, videoKey, videoPath);
+            await DownloadFileFromS3Async(_bucketName, videoKey, videoPath);
 
             //// 2. Criar pasta temporária para os frames
             var outputFolder = Path.Combine(video.FilePath, "snapshots");
@@ -53,7 +56,7 @@ namespace FiapProcessaVideo.Application.UseCases
 
             // 5. Fazer upload do ZIP para o S3
             var zipKey = Path.Combine("processed", "images.zip");
-            await UploadFileToS3Async(bucketName, zipKey, zipFilePath);
+            await UploadFileToS3Async(_bucketName, zipKey, zipFilePath);
 
             // 6. Limpeza de arquivos temporários
             File.Delete(videoPath);

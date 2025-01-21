@@ -26,20 +26,24 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 
 //AWS
 //---------------------------------------------------------------------------
-string bucketName = "bucketname";
-string videoKey = "video-file-key";
-
 // Register AWS services with specified options
 builder.Services.AddSingleton<IAmazonS3>(sp =>
 {
-    string accessKeyId = "";
-    string secretAccessKey = "";
-    string accessToken = "";
-    RegionEndpoint region = RegionEndpoint.USEast1; // Change to your desired region
+    string accessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID").ToString();
+    string secretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY").ToString();
+    string accessToken = Environment.GetEnvironmentVariable("AWS_ACCESS_TOKEN").ToString();
+    string regionEnv = Environment.GetEnvironmentVariable("AWS_REGION").ToString(); // Change to your desired region
+
+    if (string.IsNullOrEmpty(accessKeyId) || string.IsNullOrEmpty(secretAccessKey) || string.IsNullOrEmpty(regionEnv))
+    {
+        throw new InvalidOperationException("AWS credentials or region information is not set in environment variables.");
+    }
+
+    RegionEndpoint region = RegionEndpoint.GetBySystemName(regionEnv);
 
     var config = new AmazonS3Config
     {
-        RegionEndpoint = RegionEndpoint.USEast1, // Set the AWS Region
+        RegionEndpoint = region, // Set the AWS Region
         UseHttp = false,                        // Use HTTPS (default is false)
         ForcePathStyle = true                   // Enable path-style access (e.g., http://s3.amazonaws.com/bucketname)
     };

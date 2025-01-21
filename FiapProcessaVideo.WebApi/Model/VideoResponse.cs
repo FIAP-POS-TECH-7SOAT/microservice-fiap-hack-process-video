@@ -7,6 +7,9 @@ namespace FiapProcessaVideo.WebApi.Model
         [JsonProperty("id")]
         public string Id { get; set; }
         
+        [JsonProperty("file_key")]  // Maps to 'file_key' in JSON
+        public string FileKey { get; set; }        
+        
         [JsonProperty("video_path")]  // Maps to 'video_path' in JSON
         public string VideoFilePath { get; set; }
 
