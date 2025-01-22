@@ -44,7 +44,7 @@ namespace FiapProcessaVideo.WebApi.Services
 
                     if (videoResponse != null)
                     {
-                        var video = Video.Load(videoResponse.Data.VideoFilePath, videoResponse.Data.Duration, videoResponse.Data.SnapshotInterval);
+                        var video = Video.Load(videoResponse.Data.VideoFilePath, videoResponse.Data.FileKey, videoResponse.Data.Duration, videoResponse.Data.SnapshotInterval);
                         var zipfilepath = _processVideoUseCase.Execute(video);
                     }
 

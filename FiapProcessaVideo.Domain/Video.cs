@@ -2,8 +2,12 @@
 {
     public sealed class Video
     {
+        public Guid Id { get; set; }
         // Diretório do arquivo a ser processado
         public string FilePath { get; private set; }
+
+        // AWS S3 archive video key
+        public string VideoKey { get; set; }
 
         // Duração do vídeo em segundos
         public TimeSpan Duration { get; private set; }
@@ -24,18 +28,19 @@
         public List<Snapshot> Snapshots { get; private set; }
 
         // Construtor para inicialização
-        private Video(string filePath, TimeSpan duration, TimeSpan snapshotInterval)
+        private Video(string filePath, string videoKey, TimeSpan duration, TimeSpan snapshotInterval)
         {
             FilePath = filePath;
             Duration = duration;
+            VideoKey = videoKey;
             SnapshotInterval = snapshotInterval;
             Snapshots = new List<Snapshot>(); 
         }
 
         // Método Load para inicializar a instância do vídeo
-        public static Video Load(string filePath, TimeSpan duration, TimeSpan snapshotInterval)
+        public static Video Load(string filePath, string videoKey, TimeSpan duration, TimeSpan snapshotInterval)
         {
-            var video = new Video(filePath, duration, snapshotInterval);
+            var video = new Video(filePath, videoKey, duration, snapshotInterval);
 
             return video;
         }
