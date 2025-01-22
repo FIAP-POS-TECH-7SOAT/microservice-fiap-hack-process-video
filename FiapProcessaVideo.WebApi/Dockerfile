@@ -2,10 +2,20 @@
 
 # Esta fase é usada durante a execução no VS no modo rápido (Padrão para a configuração de Depuração)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER app
+USER root
 WORKDIR /app
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
+
+# Instala o ffmpeg e copia o ffprobe para o diretório /app
+RUN apt-get update && apt-get install -y ffmpeg && \
+    mkdir -p /app && \
+    cp /usr/bin/ffprobe /app/ffprobe && \
+    chown -R app:app /app && \
+    rm -rf /var/lib/apt/lists/*
+
+# Volta para o usuário "app" para maior segurança
+USER app
 
 # Esta fase é usada para compilar o projeto de serviço
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
