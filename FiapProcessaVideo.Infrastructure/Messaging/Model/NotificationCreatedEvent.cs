@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace FiapProcessaVideo.Infrastructure.Messaging.Model
 {
-    public class VideoResponse
+    public class NotificationCreatedEvent
     {
         [JsonProperty("id")]
         public string Id { get; set; }
         
-        [JsonProperty("file")]
+        [JsonProperty("file")] //filekey from S3 AWS.
         public string File { get; set; }        
         
         [JsonProperty("user_id")]
@@ -15,19 +15,10 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Model
 
         [JsonProperty("email")]
         public string Email { get; set; }
-
-        [JsonProperty("phone")]
-        public string Phone { get; set; }
-
+        
         [JsonProperty("status")]
         public string Status { get; set; }
 
-        [JsonProperty("created_at")]
-        public DateTime CreatedAt { get; set; }
-
-        [JsonProperty("updated_at")]
-        public DateTime UpdatedAt { get; set; }
-
-        public VideoResponse() { }
+        public NotificationCreatedEvent() { }
     }
 }

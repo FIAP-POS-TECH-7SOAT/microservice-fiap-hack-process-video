@@ -33,9 +33,9 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
             {
                 var contentArray = eventArgs.Body.ToArray();
                 var contentString = Encoding.UTF8.GetString(contentArray);
-                var message = JsonConvert.DeserializeObject<VideoResponse>(contentString);
+                var message = JsonConvert.DeserializeObject<VideoUploadedEvent>(contentString);
 
-                Console.WriteLine($"Message VideoResponse received with Email {message.Email}");
+                Console.WriteLine($"Message VideoUploadedEvent received with Email {message.Email}");
 
                 _channel.BasicAck(eventArgs.DeliveryTag, false);
             };
