@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Itens de Solução", "Itens
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiapProcessaVideo.Infrastructure", "FiapProcessaVideo.Infrastructure\FiapProcessaVideo.Infrastructure.csproj", "{F1D18B8B-62B3-48FA-A423-8243F4ECA1F2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{557A24C3-8668-47FC-A380-21F8BBE3ED7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{557A24C3-8668-47FC-A380-21F8BBE3ED7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{557A24C3-8668-47FC-A380-21F8BBE3ED7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1D18B8B-62B3-48FA-A423-8243F4ECA1F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1D18B8B-62B3-48FA-A423-8243F4ECA1F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1D18B8B-62B3-48FA-A423-8243F4ECA1F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1D18B8B-62B3-48FA-A423-8243F4ECA1F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

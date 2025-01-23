@@ -1,5 +1,5 @@
 using DotNetEnv;
-using FiapProcessaVideo.WebApi.Services;
+using FiapProcessaVideo.Infrastructure.Messaging.Subscribers;
 using FiapProcessaVideo.Application.UseCases;
 using RabbitMQ.Client;
 using Amazon.Extensions.NETCore.Setup;
@@ -83,7 +83,7 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 // builder.Services.AddSingleton<IModel>(channel);
 builder.Services.AddScoped<IProcessVideoUseCase, ProcessVideoUseCase>();
 // Register RabbitMQ consumer service
-// builder.Services.AddHostedService<RabbitMqConsumerService>();
+builder.Services.AddHostedService<VideoUploadeSubscriber>();
 //---------------------------------------------------------------------------
 
 var app = builder.Build();
