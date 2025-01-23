@@ -6,6 +6,7 @@ using Amazon.Extensions.NETCore.Setup;
 using Amazon.S3;
 using Amazon.Runtime;
 using Amazon;
+using FiapProcessaVideo.Infrastructure.Messaging.Publishers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -84,6 +85,7 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 builder.Services.AddScoped<IProcessVideoUseCase, ProcessVideoUseCase>();
 // Register RabbitMQ consumer service
 builder.Services.AddHostedService<VideoUploadeSubscriber>();
+builder.Services.AddScoped<NotificationPublisher>();
 //---------------------------------------------------------------------------
 
 var app = builder.Build();
