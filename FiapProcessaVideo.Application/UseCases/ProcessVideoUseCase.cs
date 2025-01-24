@@ -31,11 +31,19 @@ namespace FiapProcessaVideo.Application.UseCases
             string videoKey = video.VideoKey;
             string projectRoot = Directory.GetCurrentDirectory();
 
-            // 1. Baixar o arquivo de vídeo do S3
+            // 1. Generate the presigned URL for the video file in S3
+            string videoUrl = await GeneratePresignedUrlAsync(_bucketName, videoKey);
+
+            // 2. Download the file directly using the presigned URL
             string downloadPath = Path.Combine(projectRoot, "downloads");
+
+            // 1. Baixar o arquivo de vídeo do S3
+            //string downloadPath = Path.Combine(projectRoot, "downloads");
             Directory.CreateDirectory(downloadPath);
             var videoPath = Path.Combine(downloadPath, videoKey);
-            await DownloadFileFromS3Async(_bucketName, videoKey, videoPath);
+
+            await DownloadFileFromUrlAsync(videoUrl, videoPath);
+            //await DownloadFileFromS3Async(_bucketName, videoKey, videoPath);
 
             //// 2. Criar pasta temporária para os frames
             var outputFolder = Path.Combine(projectRoot, "snapshots");
@@ -46,15 +54,43 @@ namespace FiapProcessaVideo.Application.UseCases
             Directory.CreateDirectory(newSnapshotsFolder);
 
             //// 3. Processar o vídeo
-            var videoInfo = FFProbe.Analyse(videoPath);
-            var duration = videoInfo.Duration;
-            var interval = TimeSpan.FromSeconds(20);
+            // var videoInfo = FFProbe.Analyse(videoPath);
+            // var duration = videoInfo.Duration;
+            // var interval = TimeSpan.FromSeconds(20);
 
-            for (var currentTime = TimeSpan.Zero; currentTime < duration; currentTime += interval)
+            var tasks = new List<Task>();
+
+            // 4. Stream the file and take snapshots simultaneously
+            using (var client = new HttpClient())
+            using (var stream = await client.GetStreamAsync(videoUrl))  // Stream from the presigned URL
             {
-                Console.WriteLine($"Processando frame: {currentTime}");
-                var outputPath = Path.Combine(newSnapshotsFolder, $"frame_at_{currentTime.TotalSeconds}.jpg");
-                FFMpeg.Snapshot(videoPath, outputPath, new Size(1920, 1080), currentTime);
+                // Assuming FFmpeg accepts a stream as input for processing
+                var videoInfo = FFProbe.AnalyseStream(stream);  // Use FFProbe with the stream to get duration etc.
+                var duration = videoInfo.Duration;
+                var interval = TimeSpan.FromSeconds(20);
+
+                for (var currentTime = TimeSpan.Zero; currentTime < duration; currentTime += interval)
+                {
+                    var timeForTask = currentTime;
+                    Console.WriteLine($"Processando frame: {currentTime}");
+                    var outputPath = Path.Combine(newSnapshotsFolder, $"frame_at_{currentTime.TotalSeconds}.jpg");
+
+                    tasks.Add(Task.Run(() =>
+                    {
+                        try
+                        {
+                            // Capture snapshot at a specific time in the stream
+                            FFMpeg.SnapshotFromStream(stream, outputPath, new Size(1920, 1080), timeForTask);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error processing frame at {currentTime}: {ex.Message}");
+                        }
+                    }));
+                }
+
+                // Wait for all tasks to complete (snapshot processing)
+                await Task.WhenAll(tasks);
             }
 
             // 4. Criar arquivo e diretório dos arquivos ZIP
@@ -76,21 +112,46 @@ namespace FiapProcessaVideo.Application.UseCases
             return zipKey; // Retorna o caminho do arquivo ZIP no S3
         }
 
-        private async Task DownloadFileFromS3Async(string bucketName, string key, string filePath)
+        private async Task<string> GeneratePresignedUrlAsync(string bucketName, string key)
         {
-            var request = new GetObjectRequest
+            var request = new GetPreSignedUrlRequest
             {
                 BucketName = bucketName,
-                Key = key
+                Key = key,
+                Expires = DateTime.UtcNow.AddMinutes(15) // Set expiration as needed
             };
 
-            using (var response = await _s3Client.GetObjectAsync(request))
+            string url = _s3Client.GetPreSignedURL(request);
+            return url;
+        }
+
+        private async Task DownloadFileFromUrlAsync(string fileUrl, string filePath)
+        {
+            using (var client = new HttpClient())
             {
-                await using var responseStream = response.ResponseStream;
+                var response = await client.GetAsync(fileUrl);
+                response.EnsureSuccessStatusCode();
+
                 await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-                await responseStream.CopyToAsync(fileStream);
+                await response.Content.CopyToAsync(fileStream);
             }
         }
+
+        // private async Task DownloadFileFromS3Async(string bucketName, string key, string filePath)
+        // {
+        //     var request = new GetObjectRequest
+        //     {
+        //         BucketName = bucketName,
+        //         Key = key
+        //     };
+
+        //     using (var response = await _s3Client.GetObjectAsync(request))
+        //     {
+        //         await using var responseStream = response.ResponseStream;
+        //         await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+        //         await responseStream.CopyToAsync(fileStream);
+        //     }
+        // }
 
         private async Task UploadFileToS3Async(string bucketName, string key, string filePath)
         {
