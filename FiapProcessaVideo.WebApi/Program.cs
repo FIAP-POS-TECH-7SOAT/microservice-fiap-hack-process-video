@@ -1,11 +1,14 @@
 using DotNetEnv;
-using FiapProcessaVideo.WebApi.Services;
+using FiapProcessaVideo.Infrastructure.Messaging.Subscribers;
 using FiapProcessaVideo.Application.UseCases;
 using RabbitMQ.Client;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.S3;
 using Amazon.Runtime;
 using Amazon;
+using HealthChecks.UI.Client;
+using HealthChecks.RabbitMQ;
+using FiapProcessaVideo.Infrastructure.Messaging.Publishers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +55,16 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 });
 //---------------------------------------------------------------------------
 
+string rabbitmqUsername = Environment.GetEnvironmentVariable("AMQP_USERNAME").ToString();
+string rabbitmqPassword = Environment.GetEnvironmentVariable("AMQP_PASSWORD").ToString();
+string rabbitmqHostname = Environment.GetEnvironmentVariable("AMQP_HOSTNAME").ToString();
+// Health checks
+var connectionString = $"amqp://{rabbitmqUsername}:{rabbitmqPassword}@{rabbitmqHostname}";
+builder.Services
+    .AddHealthChecks()
+    .AddRabbitMQ(connectionString, name: "rabbitmq-check", tags: new string[] { "rabbitmq" });
+
+
 //RabbitMQ
 //---------------------------------------------------------------------------
 // string queueName = Environment.GetEnvironmentVariable("AMQP_QUEUE");
@@ -83,10 +96,17 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 // builder.Services.AddSingleton<IModel>(channel);
 builder.Services.AddScoped<IProcessVideoUseCase, ProcessVideoUseCase>();
 // Register RabbitMQ consumer service
-// builder.Services.AddHostedService<RabbitMqConsumerService>();
+builder.Services.AddHostedService<VideoUploadeSubscriber>();
+builder.Services.AddScoped<NotificationPublisher>();
 //---------------------------------------------------------------------------
 
 var app = builder.Build();
+
+app.UseHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = p => true,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
