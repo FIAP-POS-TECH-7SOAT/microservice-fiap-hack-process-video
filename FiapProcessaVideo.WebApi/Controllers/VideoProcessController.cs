@@ -16,10 +16,9 @@ namespace FiapProcessaVideo.WebApi.Controllers
         }
 
         [HttpPost("process")]
-        public async Task<IActionResult> ProcessVideo()
+        public async Task<IActionResult> ProcessVideo([FromBody] string videoKey)
         {
-            //Video video = Video.Load("/home/yuji/Documentos/git-repos/Microservice-Fiap-Processa-Video/FiapProcessaVideo.WebApi/",
-            Video video = Video.Load(@"/home/yuji/Documentos/git-repos/Microservice-Fiap-Processa-Video/FiapProcessaVideo.WebApi/", "Marvel_DOTNET_CSHARP.mp4", new TimeSpan(240), new TimeSpan(10));
+            Video video = Video.Load(@"", videoKey, new TimeSpan(240), new TimeSpan(10));
             var result = await _processVideoUseCase.Execute(video);
             return Ok(new { ZipFilePath = result });
         }
