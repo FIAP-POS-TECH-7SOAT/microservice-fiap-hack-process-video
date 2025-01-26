@@ -5,6 +5,8 @@ using RabbitMQ.Client.Events;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System.Text;
+using Microsoft.Extensions.Options;
+using FiapProcessaVideo.Infrastructure.Messaging.Model.Shared;
 
 namespace FiapProcessaVideo.Infrastructure.Messaging.Publishers
 {
@@ -12,14 +14,22 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Publishers
     {
         private readonly IConnection _connection;
         private readonly IModel _channel;
-        private const string Exchange = "notification";
+        private readonly string _exchange;
+        private readonly string _routingKey;
 
-        public NotificationPublisher()
+        private readonly MessagingPublisherSettings _messagingSettings;
+
+        public NotificationPublisher(IOptions<MessagingPublisherSettings> messagingSettings)
         {
+            _messagingSettings = messagingSettings.Value;
+
             var connectionFactory = new ConnectionFactory
             {
-                HostName = "localhost"
+                HostName = _messagingSettings.HostName
             };
+
+            _exchange = _messagingSettings.ExchangeName;
+            _routingKey = _messagingSettings.RoutingKey;
 
             _connection = connectionFactory.CreateConnection("notification-service-notification-publisher");
             _channel = _connection.CreateModel();
@@ -30,7 +40,7 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Publishers
             var payload = JsonConvert.SerializeObject(notificationEvent);
             var byteArray = Encoding.UTF8.GetBytes(payload);
 
-            _channel.BasicPublish(Exchange, "notification-created", null, byteArray);
+            _channel.BasicPublish(_exchange, _routingKey, null, byteArray);
             Console.WriteLine("NotificationCreatedEvent Published");
         }
     }

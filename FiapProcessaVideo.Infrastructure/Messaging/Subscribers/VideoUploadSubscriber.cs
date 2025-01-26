@@ -1,4 +1,6 @@
 using FiapProcessaVideo.Infrastructure.Messaging.Model;
+using FiapProcessaVideo.Infrastructure.Messaging.Model.Shared;
+using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Microsoft.Extensions.Hosting;
@@ -11,16 +13,18 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
     {
         private readonly IConnection _connection;
         private readonly IModel _channel;
-        private const string Queue = "video-uploaded";
+        private readonly MessagingSubscriberSettings _messagingSettings;
 
-        public VideoUploadeSubscriber()
+        public VideoUploadeSubscriber(IOptions<MessagingSubscriberSettings> messagingSettings)
         {
+            _messagingSettings = messagingSettings.Value;
+
             var connectionFactory = new ConnectionFactory
             {
-                HostName = "localhost"
+                HostName = _messagingSettings.HostName
             };
 
-            _connection = connectionFactory.CreateConnection("video-service-video-uploaded-consumer");
+            _connection = connectionFactory.CreateConnection("VideoUploadSubscriberConnection");
 
             _channel = _connection.CreateModel();
         }
@@ -40,7 +44,7 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
                 _channel.BasicAck(eventArgs.DeliveryTag, false);
             };
 
-            _channel.BasicConsume(Queue, false, consumer);
+            _channel.BasicConsume(_messagingSettings.QueueName, false, consumer);
 
             return Task.CompletedTask;
         }

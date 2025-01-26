@@ -1,6 +1,7 @@
 using DotNetEnv;
 using FiapProcessaVideo.Infrastructure.Messaging.Subscribers;
 using FiapProcessaVideo.Application.UseCases;
+using FiapProcessaVideo.Infrastructure.Messaging.Model.Shared;
 using RabbitMQ.Client;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.S3;
@@ -58,13 +59,29 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 string rabbitmqUsername = Environment.GetEnvironmentVariable("AMQP_USERNAME").ToString();
 string rabbitmqPassword = Environment.GetEnvironmentVariable("AMQP_PASSWORD").ToString();
 string rabbitmqHostname = Environment.GetEnvironmentVariable("AMQP_HOSTNAME").ToString();
+string rabbitmqPort = Environment.GetEnvironmentVariable("AMQP_PORT").ToString();
 // Health checks
-var connectionString = $"amqp://{rabbitmqUsername}:{rabbitmqPassword}@{rabbitmqHostname}";
+var connectionString = $"amqp://{rabbitmqUsername}:{rabbitmqPassword}@{rabbitmqHostname}:{rabbitmqPort}";
+
+Console.WriteLine(connectionString);
+
 builder.Services
     .AddHealthChecks()
     .AddRabbitMQ(connectionString, name: "rabbitmq-check", tags: new string[] { "rabbitmq" });
 
+//DI RabbitMQ configuration
+builder.Services.Configure<MessagingSubscriberSettings>(options =>
+{
+    options.HostName = Environment.GetEnvironmentVariable("AMQP_HOSTNAME").ToString();
+    options.QueueName = Environment.GetEnvironmentVariable("AMQP_QUEUE").ToString();
+});
 
+builder.Services.Configure<MessagingPublisherSettings>(options =>
+{
+    options.HostName = Environment.GetEnvironmentVariable("AMQP_HOSTNAME").ToString();
+    options.ExchangeName = Environment.GetEnvironmentVariable("AMQP_QUEUE").ToString();
+    options.RoutingKey = Environment.GetEnvironmentVariable("AMQP_ROUTING_KEY").ToString();
+});
 //RabbitMQ
 //---------------------------------------------------------------------------
 // string queueName = Environment.GetEnvironmentVariable("AMQP_QUEUE");
