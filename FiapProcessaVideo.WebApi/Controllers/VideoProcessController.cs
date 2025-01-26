@@ -22,7 +22,7 @@ namespace FiapProcessaVideo.WebApi.Controllers
         [HttpPost("process")]
         public async Task<IActionResult> ProcessVideo([FromBody] string videoKey)
         {
-            Video video = Video.Load(@"", videoKey, new TimeSpan(240), new TimeSpan(10));
+            Video video = Video.Load("1234", "rafa.yuji@gmail.com", "123456789", videoKey);
             var result = await _processVideoUseCase.Execute(video);
 
             NotificationCreatedEvent notificationCreatedEvent = new NotificationCreatedEvent();

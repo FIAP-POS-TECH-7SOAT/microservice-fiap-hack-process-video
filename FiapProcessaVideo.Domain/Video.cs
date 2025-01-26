@@ -3,58 +3,73 @@
     public sealed class Video
     {
         public Guid Id { get; set; }
-        // Diretório do arquivo a ser processado
-        public string FilePath { get; private set; }
+
+        public string UserId { get; private set; }
+
+        public string Email { get; private set; }
+
+        public string Phone { get; private set; }
 
         // AWS S3 archive video key
-        public string VideoKey { get; set; }
+        public string VideoKey { get; private set; }
 
-        // Duração do vídeo em segundos
-        public TimeSpan Duration { get; private set; }
-
-        // Pasta de saída para dos snapshots
-        public string OutputFolder { get; private set; }
-
-        // Intervalo entre os snapshots capturados
-        public TimeSpan SnapshotInterval { get; private set; }
-
-        // Data de processamento
         public DateTime ProcessedAt { get; private set; }
 
-        // Status
         public string Status { get ; private set; }
 
-        // Snapshot processados
-        public List<Snapshot> Snapshots { get; private set; }
+        public DateTime CreatedAt { get; set; }
 
-        // Construtor para inicialização
-        private Video(string filePath, string videoKey, TimeSpan duration, TimeSpan snapshotInterval)
+        public DateTime UpdateAt { get; set; }
+
+        public Video(Guid id, string userId, string email, string phone, string videoKey, string status, DateTime processedAt, DateTime createdAt, DateTime updateAt)
         {
-            FilePath = filePath;
-            Duration = duration;
+            Id = id;
+            UserId = userId;
+            Email = email;
+            Phone = phone;
             VideoKey = videoKey;
-            SnapshotInterval = snapshotInterval;
-            Snapshots = new List<Snapshot>(); 
+            Status = status;
+            ProcessedAt = processedAt;
+            CreatedAt = createdAt;
+            UpdateAt = updateAt;
         }
 
-        // Método Load para inicializar a instância do vídeo
-        public static Video Load(string filePath, string videoKey, TimeSpan duration, TimeSpan snapshotInterval)
+        public static Video Load(string userId, string email, string phone, string videoKey)
         {
-            var video = new Video(filePath, videoKey, duration, snapshotInterval);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
+            }
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new ArgumentException("Email cannot be null or empty.", nameof(email));
+            }
+
+            if (string.IsNullOrWhiteSpace(phone))
+            {
+                throw new ArgumentException("Phone cannot be null or empty.", nameof(phone));
+            }
+
+            if (string.IsNullOrWhiteSpace(videoKey))
+            {
+                throw new ArgumentException("Video key cannot be null or empty.", nameof(videoKey));
+            }
+
+            // Initialize a new Video instance using the constructor
+            var video = new Video(
+                id: Guid.NewGuid(),
+                userId: userId,
+                email: email,
+                phone: phone,
+                videoKey: videoKey,
+                status: "Pending", // Default status
+                processedAt: DateTime.MinValue, // Set to the minimum value until processed
+                createdAt: DateTime.UtcNow,
+                updateAt: DateTime.UtcNow
+            );
 
             return video;
         }
-
-        public void SetOutputFolder(string outputFolder)
-        {
-            OutputFolder = outputFolder;
-        }
-
-        // Método para adicionar um snapshot processado
-        public void AddSnapshot(Snapshot snapshot)
-        {
-            Snapshots.Add(snapshot);
-        }
     }
-
 }

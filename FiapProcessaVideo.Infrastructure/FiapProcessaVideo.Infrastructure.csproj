@@ -13,4 +13,8 @@
     <PackageReference Include="RabbitMQ.Client" Version="6.5.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FiapProcessaVideo.Domain\FiapProcessaVideo.Domain.csproj" />
+    <ProjectReference Include="..\FiapProcessaVideo.Application\FiapProcessaVideo.Application.csproj" />
+  </ItemGroup>
 </Project>
