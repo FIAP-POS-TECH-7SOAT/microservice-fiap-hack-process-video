@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using FiapLanchonete.Infrastructure.Model;
 
 namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
 {    
@@ -43,17 +44,19 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
             {
                 var contentArray = eventArgs.Body.ToArray();
                 var contentString = Encoding.UTF8.GetString(contentArray);
-                var message = JsonConvert.DeserializeObject<VideoUploadedEvent>(contentString);
+                var message = JsonConvert.DeserializeObject<PayloadVideoWrapper>(contentString);
 
                 VideoMapping videoMapping = new VideoMapping();
                 
+                Console.WriteLine($"Message VideoUploadedEvent received with Email {message.Data.Email}");
+
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var processVideoUseCase = scope.ServiceProvider.GetRequiredService<IProcessVideoUseCase>();
                     // Use processVideoUseCase here
                     if (message != null)
                     {
-                        Video videoDomain = videoMapping.ToDomain(message);
+                        Video videoDomain = videoMapping.ToDomain(message.Data);
                         await processVideoUseCase.Execute(videoDomain);
                     } 
                     else 
@@ -61,8 +64,6 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
                         throw new Exception($"The message received from RabbitMQ was null or empty.");
                     }
                 }
-
-                Console.WriteLine($"Message VideoUploadedEvent received with Email {message.Email}");
 
                 _channel.BasicAck(eventArgs.DeliveryTag, false);
             };

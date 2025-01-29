@@ -52,7 +52,7 @@ namespace FiapProcessaVideo.Application.UseCases
 
             for (var currentTime = TimeSpan.Zero; currentTime < duration; currentTime += interval)
             {
-                Console.WriteLine($"Processando frame: {currentTime}");
+                Console.WriteLine($"Video Id: {video.Id} - Processing frame: {currentTime}");
                 var outputPath = Path.Combine(newSnapshotsFolder, $"frame_at_{currentTime.TotalSeconds}.jpg");
                 FFMpeg.Snapshot(videoPath, outputPath, new Size(1920, 1080), currentTime);
             }
@@ -84,11 +84,31 @@ namespace FiapProcessaVideo.Application.UseCases
                 Key = key
             };
 
-            using (var response = await _s3Client.GetObjectAsync(request))
+            try
             {
-                await using var responseStream = response.ResponseStream;
-                await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-                await responseStream.CopyToAsync(fileStream);
+                using (var response = await _s3Client.GetObjectAsync(request))
+                {
+                    await using var responseStream = response.ResponseStream;
+                    await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+                    await responseStream.CopyToAsync(fileStream);
+                }
+            }
+            catch (AmazonS3Exception s3Exception)
+            {
+                // Handle specific S3 error, such as file not found
+                if (s3Exception.ErrorCode == "NoSuchKey")
+                {
+                    Console.WriteLine($"File not found in the bucket. Key: {key}");
+                }
+                else
+                {
+                    Console.WriteLine($"Error accessing S3: {s3Exception.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle other general errors
+                Console.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
 
