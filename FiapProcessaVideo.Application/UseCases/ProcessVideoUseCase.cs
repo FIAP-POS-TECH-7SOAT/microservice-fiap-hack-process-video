@@ -7,6 +7,8 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using FiapProcessaVideo.Infrastructure.Messaging.Publishers;
 using FiapProcessaVideo.Infrastructure.Messaging.Model;
+using FiapProcessaVideo.Infrastructure.Messaging.Mapping;
+using FiapLanchonete.Infrastructure.Model;
 
 namespace FiapProcessaVideo.Application.UseCases
 {
@@ -34,13 +36,16 @@ namespace FiapProcessaVideo.Application.UseCases
             string videoKey = video.VideoKey;
             string projectRoot = Directory.GetCurrentDirectory();
 
+            // Publish "Processing Started"
+            PublishProcessingStatus(video, "processing");
+
             // 1. Baixar o arquivo de vídeo do S3
             string downloadPath = Path.Combine(projectRoot, "downloads");
             Directory.CreateDirectory(downloadPath);
             var videoPath = Path.Combine(downloadPath, videoKey);
             await DownloadFileFromS3Async(_bucketName, videoKey, videoPath);
 
-            //// 2. Criar pasta temporária para os frames
+            // 2. Criar pasta temporária para os frames
             var outputFolder = Path.Combine(projectRoot, "snapshots");
             Directory.CreateDirectory(outputFolder);
 
@@ -48,7 +53,7 @@ namespace FiapProcessaVideo.Application.UseCases
             var newSnapshotsFolder = Path.Combine(outputFolder, snapshotsId);
             Directory.CreateDirectory(newSnapshotsFolder);
 
-            //// 3. Processar o vídeo
+            // 3. Processar o vídeo
             var videoInfo = FFProbe.Analyse(videoPath);
             var duration = videoInfo.Duration;
             var interval = TimeSpan.FromSeconds(20);
@@ -76,11 +81,26 @@ namespace FiapProcessaVideo.Application.UseCases
             File.Delete(zipFilePath);
             Directory.Delete(newSnapshotsFolder, true);
 
-            VideoUploadedEvent videoUploadedEvent = 
+            // Publish "processed"
+            PublishProcessingStatus(video, "processed");
 
-            _notificationPublisher.PublishNotificationCreated()
+            return zipKey;
+        }
 
-            return zipKey; // Retorna o caminho do arquivo ZIP no S3
+        private void PublishProcessingStatus(Video video, string status)
+        {
+            VideoMapping videoMapping = new VideoMapping();
+            VideoUploadedEvent videoUploadedEvent = videoMapping.ToRabbitMQ(video);
+
+            videoUploadedEvent.Status = status;
+
+            PayloadVideoWrapper payloadVideoWrapper = new PayloadVideoWrapper
+            {
+                Pattern = "video.processing.status",
+                Data = videoUploadedEvent
+            };
+
+            _notificationPublisher.PublishNotificationCreated(payloadVideoWrapper, status);
         }
 
         private async Task DownloadFileFromS3Async(string bucketName, string key, string filePath)

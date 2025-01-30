@@ -35,7 +35,7 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
                 VirtualHost = _messagingSettings.VirtualHost
             };
 
-            _connection = connectionFactory.CreateConnection("\"microservice-fiap-processa-video-upload-subscriber-connection");
+            _connection = connectionFactory.CreateConnection("microservice-fiap-processa-video-upload-subscriber-connection");
 
             _channel = _connection.CreateModel();
         }

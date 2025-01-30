@@ -31,7 +31,7 @@ namespace FiapProcessaVideo.WebApi.Controllers
             notificationCreatedEvent.File = videoKey;
             notificationCreatedEvent.Status = "processed";
             notificationCreatedEvent.UserId = "";
-            _notificationPublisher.PublishNotificationCreated(notificationCreatedEvent);
+            //_notificationPublisher.PublishNotificationCreated(notificationCreatedEvent);
             return Ok(new { ZipFilePath = result });
         }
     }

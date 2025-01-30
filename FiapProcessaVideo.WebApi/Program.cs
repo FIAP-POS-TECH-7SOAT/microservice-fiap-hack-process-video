@@ -85,7 +85,7 @@ builder.Services.Configure<MessagingSubscriberSettings>(options =>
     options.UserName = rabbitmqUsername;
     options.Password = rabbitmqPassword;
     options.VirtualHost = Environment.GetEnvironmentVariable("AMQP_VIRTUAL_HOST").ToString();
-    options.QueueName = queues.FileQueue.RoutingKeys[0];
+    options.QueueName = queues.FileQueue.Name;
 });
 
 builder.Services.Configure<MessagingPublisherSettings>(options =>
@@ -95,9 +95,9 @@ builder.Services.Configure<MessagingPublisherSettings>(options =>
     options.UserName = rabbitmqUsername;
     options.Password = rabbitmqPassword;
     options.ExchangeName = Environment.GetEnvironmentVariable("AMQP_EXCHANGE").ToString();
-    options.RoutingKey = Environment.GetEnvironmentVariable("AMQP_ROUTING_KEY").ToString();
     options.VirtualHost = Environment.GetEnvironmentVariable("AMQP_VIRTUAL_HOST").ToString();
-    options.QueueName = queues.FileQueue.RoutingKeys[1];
+    options.RoutingKeys = queues.FileQueue.RoutingKeys;
+    options.QueueName = queues.FileQueue.Name;
 });
 
 builder.Services.AddScoped<IProcessVideoUseCase, ProcessVideoUseCase>();
