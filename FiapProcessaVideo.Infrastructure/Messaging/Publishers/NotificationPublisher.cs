@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System.Text;
 using Microsoft.Extensions.Options;
 using FiapProcessaVideo.Infrastructure.Messaging.Model.Shared;
+using FiapLanchonete.Infrastructure.Model;
 
 namespace FiapProcessaVideo.Infrastructure.Messaging.Publishers
 {
@@ -25,17 +26,21 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Publishers
 
             var connectionFactory = new ConnectionFactory
             {
-                HostName = _messagingSettings.HostName
+                HostName = _messagingSettings.HostName,
+                Password = _messagingSettings.Password,
+                Port = _messagingSettings.Port,
+                UserName = _messagingSettings.UserName,
+                VirtualHost = _messagingSettings.VirtualHost
             };
 
             _exchange = _messagingSettings.ExchangeName;
             _routingKey = _messagingSettings.RoutingKey;
 
-            _connection = connectionFactory.CreateConnection("notification-service-notification-publisher");
+            _connection = connectionFactory.CreateConnection("microservice-fiap-processa-video-notification-publisher-connection");
             _channel = _connection.CreateModel();
         }
 
-        public void PublishNotificationCreated(NotificationCreatedEvent notificationEvent)
+        public void PublishNotificationCreated(PayloadVideoWrapper notificationEvent)
         {
             var payload = JsonConvert.SerializeObject(notificationEvent);
             var byteArray = Encoding.UTF8.GetBytes(payload);

@@ -2,7 +2,6 @@ using FiapProcessaVideo.Infrastructure.Messaging.Model;
 using FiapProcessaVideo.Infrastructure.Messaging.Model.Shared;
 using FiapProcessaVideo.Infrastructure.Messaging.Mapping;
 using FiapProcessaVideo.Domain;
-using FiapProcessaVideo.Application.UseCases;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -11,6 +10,7 @@ using Newtonsoft.Json;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using FiapLanchonete.Infrastructure.Model;
+using FiapProcessaVideo.Infrastructure.Messaging.Publishers.Interfaces;
 
 namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
 {    
@@ -21,17 +21,21 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
         private readonly MessagingSubscriberSettings _messagingSettings;
         private readonly IServiceProvider _serviceProvider;
 
-        public VideoUploadeSubscriber( IServiceProvider serviceProvider, IOptions<MessagingSubscriberSettings> messagingSettings)
+        public VideoUploadeSubscriber(IServiceProvider serviceProvider, IOptions<MessagingSubscriberSettings> messagingSettings)
         {
             _messagingSettings = messagingSettings.Value;
             _serviceProvider = serviceProvider;
 
             var connectionFactory = new ConnectionFactory
             {
-                HostName = _messagingSettings.HostName
+                HostName = _messagingSettings.HostName,
+                Password = _messagingSettings.Password,
+                Port = _messagingSettings.Port,
+                UserName = _messagingSettings.UserName,
+                VirtualHost = _messagingSettings.VirtualHost
             };
 
-            _connection = connectionFactory.CreateConnection("VideoUploadSubscriberConnection");
+            _connection = connectionFactory.CreateConnection("\"microservice-fiap-processa-video-upload-subscriber-connection");
 
             _channel = _connection.CreateModel();
         }

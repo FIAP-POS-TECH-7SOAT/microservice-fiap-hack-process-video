@@ -15,6 +15,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FiapProcessaVideo.Domain\FiapProcessaVideo.Domain.csproj" />
-    <ProjectReference Include="..\FiapProcessaVideo.Application\FiapProcessaVideo.Application.csproj" />
   </ItemGroup>
 </Project>

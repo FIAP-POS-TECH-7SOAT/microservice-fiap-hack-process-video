@@ -5,6 +5,8 @@ using FFMpegCore;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.S3;
 using Amazon.S3.Model;
+using FiapProcessaVideo.Infrastructure.Messaging.Publishers;
+using FiapProcessaVideo.Infrastructure.Messaging.Model;
 
 namespace FiapProcessaVideo.Application.UseCases
 {
@@ -17,11 +19,12 @@ namespace FiapProcessaVideo.Application.UseCases
     {
         private readonly IAmazonS3 _s3Client;
         private readonly string _bucketName;
+        private readonly NotificationPublisher _notificationPublisher;
 
-        public ProcessVideoUseCase(IAmazonS3 s3Client)
+        public ProcessVideoUseCase(IAmazonS3 s3Client, NotificationPublisher notificationPublisher)
         {
             _s3Client = s3Client;
-
+            _notificationPublisher = notificationPublisher;
             // Fetch bucket name from environment variables
             _bucketName = Environment.GetEnvironmentVariable("S3_BUCKET_NAME");
         }
@@ -72,6 +75,10 @@ namespace FiapProcessaVideo.Application.UseCases
             File.Delete(videoPath);
             File.Delete(zipFilePath);
             Directory.Delete(newSnapshotsFolder, true);
+
+            VideoUploadedEvent videoUploadedEvent = 
+
+            _notificationPublisher.PublishNotificationCreated()
 
             return zipKey; // Retorna o caminho do arquivo ZIP no S3
         }
