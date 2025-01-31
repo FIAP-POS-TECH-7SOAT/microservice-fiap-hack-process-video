@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FiapProcessaVideo.Domain\FiapProcessaVideo.Domain.csproj" />
+    <ProjectReference Include="..\FiapProcessaVideo.Infrastructure\FiapProcessaVideo.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,33 @@
+services:
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  fiap-processa-video:
+    build:
+      context: .
+      dockerfile: FiapProcessaVideo.WebApi/Dockerfile
+    container_name: fiap-processa-video
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    env_file:
+      - FiapProcessaVideo.WebApi/.env
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

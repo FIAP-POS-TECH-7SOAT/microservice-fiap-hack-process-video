@@ -1,11 +1,13 @@
 using DotNetEnv;
-using FiapProcessaVideo.WebApi.Services;
+using FiapProcessaVideo.Infrastructure.Messaging.Subscribers;
 using FiapProcessaVideo.Application.UseCases;
-using RabbitMQ.Client;
-using Amazon.Extensions.NETCore.Setup;
+using FiapProcessaVideo.Infrastructure.Messaging.Model.Shared;
 using Amazon.S3;
-using Amazon.Runtime;
 using Amazon;
+using HealthChecks.UI.Client;
+using HealthChecks.RabbitMQ;
+using FiapProcessaVideo.Infrastructure.Messaging.Publishers;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,41 +54,64 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 });
 //---------------------------------------------------------------------------
 
-//RabbitMQ
-//---------------------------------------------------------------------------
-// string queueName = Environment.GetEnvironmentVariable("AMQP_QUEUE");
-// string routingKey = Environment.GetEnvironmentVariable("AMQP_ROUTING_KEY");
+//RabbitMQ configuration
 
-// // Add RabbitMQ connection to DI
-// var factory = new ConnectionFactory() { Uri = new Uri(Environment.GetEnvironmentVariable("AMQP_URL")) };
-// var connection = factory.CreateConnection();
+string jsonQueues = Environment.GetEnvironmentVariable("AMQP_QUEUES");
+AmqpQueues queues = new AmqpQueues();
+if (!string.IsNullOrEmpty(jsonQueues))
+{
+    queues = JsonConvert.DeserializeObject<AmqpQueues>(jsonQueues);
+    Console.WriteLine(queues.FileQueue.Name);
+}
 
-// // Initialize connection and channel
-// var channel = connection.CreateModel();
+string rabbitmqUsername = Environment.GetEnvironmentVariable("AMQP_USERNAME").ToString();
+string rabbitmqPassword = Environment.GetEnvironmentVariable("AMQP_PASSWORD").ToString();
+string rabbitmqHostname = Environment.GetEnvironmentVariable("AMQP_HOSTNAME").ToString();
+string rabbitmqPort = Environment.GetEnvironmentVariable("AMQP_PORT").ToString();
+// Health checks
+var connectionString = $"amqps://{rabbitmqUsername}:{rabbitmqPassword}@{rabbitmqHostname}:{rabbitmqPort}";
+//var connectionString = "amqps://pfuliwzb:EQFanpERUMVwytUkXu6cmjwZpOuWm57u@jackal.rmq.cloudamqp.com/pfuliwzb";
 
-// // Declare queue (optional here; could also be done in the consumer service)
-// channel.QueueDeclare(queue: queueName,
-//                      durable: false,
-//                      exclusive: false,
-//                      autoDelete: false,
-//                      arguments: null);
+Console.WriteLine(connectionString);
 
-// // Bind the queue to the exchange using the routing key
-// channel.QueueBind(queue: queueName,
-//                   exchange: "amq.direct",
-//                   routingKey: routingKey);
+builder.Services
+    .AddHealthChecks()
+    .AddRabbitMQ(connectionString, name: "rabbitmq-check", tags: new string[] { "rabbitmq" });
 
-//assert bind com a exchange ...
+builder.Services.Configure<MessagingSubscriberSettings>(options =>
+{
+    options.HostName = rabbitmqHostname;
+    options.Port = Convert.ToInt32(rabbitmqPort);
+    options.UserName = rabbitmqUsername;
+    options.Password = rabbitmqPassword;
+    options.VirtualHost = Environment.GetEnvironmentVariable("AMQP_VIRTUAL_HOST").ToString();
+    options.QueueName = queues.FileQueue.Name;
+});
 
-// Register connection and channel in DI container
-// builder.Services.AddSingleton<IConnection>(connection);
-// builder.Services.AddSingleton<IModel>(channel);
+builder.Services.Configure<MessagingPublisherSettings>(options =>
+{
+    options.HostName = rabbitmqHostname;
+    options.Port = Convert.ToInt32(rabbitmqPort);
+    options.UserName = rabbitmqUsername;
+    options.Password = rabbitmqPassword;
+    options.ExchangeName = Environment.GetEnvironmentVariable("AMQP_EXCHANGE").ToString();
+    options.VirtualHost = Environment.GetEnvironmentVariable("AMQP_VIRTUAL_HOST").ToString();
+    options.RoutingKeys = queues.FileQueue.RoutingKeys.ToList();
+    options.QueueName = queues.FileQueue.Name;
+});
+
 builder.Services.AddScoped<IProcessVideoUseCase, ProcessVideoUseCase>();
-// Register RabbitMQ consumer service
-// builder.Services.AddHostedService<RabbitMqConsumerService>();
+builder.Services.AddHostedService<VideoUploadeSubscriber>();
+builder.Services.AddScoped<NotificationPublisher>();
 //---------------------------------------------------------------------------
 
 var app = builder.Build();
+
+app.UseHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = p => true,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
