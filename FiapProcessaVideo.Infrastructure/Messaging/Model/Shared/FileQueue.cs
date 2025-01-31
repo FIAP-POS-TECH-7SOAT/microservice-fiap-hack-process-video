@@ -8,6 +8,6 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Model.Shared
         public string Name { get; set; }
 
         [JsonProperty("routing_keys")]
-        public List<string> RoutingKeys { get; set; }
+        public string[] RoutingKeys { get; set; }
     }
 }

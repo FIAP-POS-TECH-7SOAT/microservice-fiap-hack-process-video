@@ -69,7 +69,7 @@ string rabbitmqPassword = Environment.GetEnvironmentVariable("AMQP_PASSWORD").To
 string rabbitmqHostname = Environment.GetEnvironmentVariable("AMQP_HOSTNAME").ToString();
 string rabbitmqPort = Environment.GetEnvironmentVariable("AMQP_PORT").ToString();
 // Health checks
-var connectionString = $"amqp://{rabbitmqUsername}:{rabbitmqPassword}@{rabbitmqHostname}:{rabbitmqPort}";
+var connectionString = $"amqps://{rabbitmqUsername}:{rabbitmqPassword}@{rabbitmqHostname}:{rabbitmqPort}";
 //var connectionString = "amqps://pfuliwzb:EQFanpERUMVwytUkXu6cmjwZpOuWm57u@jackal.rmq.cloudamqp.com/pfuliwzb";
 
 Console.WriteLine(connectionString);
@@ -96,7 +96,7 @@ builder.Services.Configure<MessagingPublisherSettings>(options =>
     options.Password = rabbitmqPassword;
     options.ExchangeName = Environment.GetEnvironmentVariable("AMQP_EXCHANGE").ToString();
     options.VirtualHost = Environment.GetEnvironmentVariable("AMQP_VIRTUAL_HOST").ToString();
-    options.RoutingKeys = queues.FileQueue.RoutingKeys;
+    options.RoutingKeys = queues.FileQueue.RoutingKeys.ToList();
     options.QueueName = queues.FileQueue.Name;
 });
 

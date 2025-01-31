@@ -23,20 +23,8 @@ services:
         condition: service_healthy
     ports:
       - "3000:3000"
-    environment:
-      - AMQP_USERNAME=guest
-      - AMQP_PASSWORD=guest
-      - AMQP_HOSTNAME=rabbitmq
-      - AMQP_PORT=5672
-      - AMQP_QUEUE=file_queue
-      - AMQP_EXCHANGE=fiap
-      - AMQP_ROUTING_KEY=fiap12345!
-      - PORT=3000
-      - S3_BUCKET_NAME=fiap-processa-video-s3
-      - AWS_REGION=us-east-1
-      - AWS_ACCESS_KEY_ID=ASIAZTLJHSX4MUEDKXQ4
-      - AWS_SECRET_ACCESS_KEY=Q0WmXWR7QqgHv6GfkZuoZ9nWoqUXpFjaM74aypDd
-      - AWS_ACCESS_TOKEN=IQoJb3JpZ2luX2VjEC8aCXVzLXdlc3QtMiJGMEQCIBhRLQUxoOoZ0rVbZZ1efJRlS912tVZdwcz5JoCbmQn6AiA16643EpmFdpepLphOCsAoOekmg9QLuNdnBbSYFI4fCCqtAgg4EAIaDDY2MDAzNTA0ODk1MiIM0rgFGZpO2HqSfTKTKooCDCEl0HgZ+bY+bXevZ9N9gyldxcUKHH3ID1TnyiVAcfOviwM8+6udvOBLqzSzOHXdzRaJBg0evt1Xzd/aCd53pMK6i6BySAtoIIx2ZRXRP1D9TLCbtp6x9J6k9A/CsI4S0RFLUiNNzV/7yfEAsXdAlDoSKV+1/Ho7t0+wqScEoVVXTWDSCP0yBnxIYv8hi1pkwg8iMc3alwFoPcJbamLQpbHktF9YPYsGhJ4DAzuXJ3H60Gxx016RumPpLXB1xzEXmzdb3uy1ihdm+i989ioREPd0rVl/4r6HyhC9OFiAFZY4VsiQUJot1yfdFMVi7xxl8C0lUvAmNyDzGZ4+lLt2j4kcm6Drz8RkM9Iwot/VvAY6ngHeHreoJAMT6IEiyjnmw4xU9sRxb5SPSfuiatklPvl7ekUaByVHvkDVh4dVpE9pGEf3z2XE78Bi+fNWKP8qSip5w+bVowCWivBQRBp6/LD13DKtjuKan1W+swBnmbmz0lGFCC6osNxGhYPuiK9zHP/AAeFCo6Urq9MM/osWupqr6E7VvQ4IF/isvkZqRO+kkVT7QXZ7hRKokBK55y0VeA==
+    env_file:
+      - FiapProcessaVideo.WebApi/.env
     networks:
       - app-network
 
