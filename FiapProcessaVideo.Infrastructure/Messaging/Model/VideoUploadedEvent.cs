@@ -23,10 +23,10 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Model
         public string Status { get; set; }
 
         [JsonProperty("created_at")]
-        public DateTime CreatedAt { get; set; }
+        public string CreatedAt { get; set; }
 
         [JsonProperty("updated_at")]
-        public DateTime UpdatedAt { get; set; }
+        public string UpdatedAt { get; set; }
 
         public VideoUploadedEvent() { }
     }
