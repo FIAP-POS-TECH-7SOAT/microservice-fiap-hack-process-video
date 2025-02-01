@@ -44,3 +44,4 @@ msbuild.wrn
 
 # environment variables
 .env
+/FiapProcessaVideo.WebApi/logs

@@ -8,6 +8,8 @@ using HealthChecks.UI.Client;
 using HealthChecks.RabbitMQ;
 using FiapProcessaVideo.Infrastructure.Messaging.Publishers;
 using Newtonsoft.Json;
+using Serilog;
+using FiapProcessaVideo.WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,6 +80,11 @@ builder.Services
     .AddHealthChecks()
     .AddRabbitMQ(connectionString, name: "rabbitmq-check", tags: new string[] { "rabbitmq" });
 
+//  Logging
+//---------------------------------------------------------------------------
+builder.Host.SerilogConfiguration();
+//---------------------------------------------------------------------------
+
 builder.Services.Configure<MessagingSubscriberSettings>(options =>
 {
     options.HostName = rabbitmqHostname;
@@ -100,9 +107,9 @@ builder.Services.Configure<MessagingPublisherSettings>(options =>
     options.QueueName = queues.FileQueue.Name;
 });
 
-builder.Services.AddScoped<IProcessVideoUseCase, ProcessVideoUseCase>();
-builder.Services.AddHostedService<VideoUploadeSubscriber>();
-builder.Services.AddScoped<NotificationPublisher>();
+//builder.Services.AddScoped<IProcessVideoUseCase, ProcessVideoUseCase>();
+//builder.Services.AddHostedService<VideoUploadeSubscriber>();
+//builder.Services.AddScoped<NotificationPublisher>();
 //---------------------------------------------------------------------------
 
 var app = builder.Build();
