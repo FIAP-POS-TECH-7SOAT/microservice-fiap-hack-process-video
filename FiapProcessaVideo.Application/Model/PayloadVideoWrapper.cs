@@ -1,7 +1,6 @@
-using FiapProcessaVideo.Infrastructure.Messaging.Model;
 using Newtonsoft.Json;
 
-namespace FiapLanchonete.Infrastructure.Model
+namespace FiapProcessaVideo.Application.Model
 {
     public class PayloadVideoWrapper
     {

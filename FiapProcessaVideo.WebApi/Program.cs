@@ -2,6 +2,7 @@ using DotNetEnv;
 using FiapProcessaVideo.Infrastructure.Messaging.Subscribers;
 using FiapProcessaVideo.Application.UseCases;
 using FiapProcessaVideo.Infrastructure.Messaging.Model.Shared;
+using FiapProcessaVideo.Application.Messaging.Interfaces;
 using Amazon.S3;
 using Amazon;
 using HealthChecks.UI.Client;

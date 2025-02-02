@@ -1,8 +1,7 @@
-using FiapProcessaVideo.Infrastructure.Messaging.Model;
-using FiapProcessaVideo.Infrastructure.Messaging.Mapping;
+using FiapProcessaVideo.Application.Model;
 using FiapProcessaVideo.Domain;
 
-namespace FiapProcessaVideo.Infrastructure.Messaging.Mapping
+namespace FiapProcessaVideo.Application.Mapping
 {
     public class VideoMapping
     {

@@ -1,7 +1,7 @@
-using FiapProcessaVideo.Infrastructure.Messaging.Model;
 using FiapProcessaVideo.Infrastructure.Messaging.Model.Shared;
-using FiapProcessaVideo.Infrastructure.Messaging.Mapping;
+using FiapProcessaVideo.Application.Mapping;
 using FiapProcessaVideo.Application.UseCases;
+using FiapProcessaVideo.Application.Model;
 using FiapProcessaVideo.Domain;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -10,8 +10,6 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
-using FiapLanchonete.Infrastructure.Model;
-using FiapProcessaVideo.Infrastructure.Messaging.Publishers.Interfaces;
 
 namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
 {    

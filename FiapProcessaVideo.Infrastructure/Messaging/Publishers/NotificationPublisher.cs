@@ -1,5 +1,4 @@
-using FiapProcessaVideo.Infrastructure.Messaging.Publishers.Interfaces;
-using FiapProcessaVideo.Infrastructure.Messaging.Model;
+using FiapProcessaVideo.Application.Messaging.Interfaces;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Microsoft.Extensions.Hosting;
@@ -7,7 +6,7 @@ using Newtonsoft.Json;
 using System.Text;
 using Microsoft.Extensions.Options;
 using FiapProcessaVideo.Infrastructure.Messaging.Model.Shared;
-using FiapLanchonete.Infrastructure.Model;
+using FiapProcessaVideo.Application.Model;
 
 namespace FiapProcessaVideo.Infrastructure.Messaging.Publishers
 {
@@ -24,14 +23,8 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Publishers
         {
             _messagingSettings = messagingSettings.Value;
 
-            var connectionFactory = new ConnectionFactory
-            {
-                HostName = _messagingSettings.HostName,
-                Password = _messagingSettings.Password,
-                Port = _messagingSettings.Port,
-                UserName = _messagingSettings.UserName,
-                VirtualHost = _messagingSettings.VirtualHost
-            };
+            ConnectionFactory connectionFactory = new ConnectionFactory();
+            connectionFactory.Uri = new Uri(_messagingSettings.Uri);
 
             _exchange = _messagingSettings.ExchangeName;
             _routingKeys = _messagingSettings.RoutingKeys;
@@ -40,9 +33,9 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Publishers
             _channel = _connection.CreateModel();
         }
 
-        public void PublishNotificationCreated(PayloadVideoWrapper notificationEvent, string status)
+        public void PublishNotificationCreated(PayloadVideoWrapper payloadVideo, string status)
         {
-            var payload = JsonConvert.SerializeObject(notificationEvent);
+            var payload = JsonConvert.SerializeObject(payloadVideo);
             var byteArray = Encoding.UTF8.GetBytes(payload);
             string routingKey;
 
