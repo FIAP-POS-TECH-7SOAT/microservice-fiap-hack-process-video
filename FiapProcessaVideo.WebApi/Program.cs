@@ -98,7 +98,7 @@ Console.WriteLine($"Routing keys: {queues.FileQueue.RoutingKeys[0]} e {queues.Fi
 
 builder.Services.AddScoped<ProcessVideoUseCase>();
 builder.Services.AddHostedService<VideoUploadeSubscriber>();
-builder.Services.AddScoped<NotificationPublisher>();
+builder.Services.AddScoped<IMessagePublisher, NotificationPublisher>();
 //---------------------------------------------------------------------------
 
 var app = builder.Build();
