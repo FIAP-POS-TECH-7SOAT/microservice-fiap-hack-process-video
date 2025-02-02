@@ -10,12 +10,10 @@ namespace FiapProcessaVideo.WebApi.Controllers
     [Route("api/[controller]")]
     public class VideoProcessController : ControllerBase
     {
-        private readonly IProcessVideoUseCase _processVideoUseCase;
         private readonly NotificationPublisher _notificationPublisher;
 
-        public VideoProcessController(IProcessVideoUseCase processVideoUseCase, NotificationPublisher notificationPublisher)
+        public VideoProcessController(NotificationPublisher notificationPublisher)
         {
-            _processVideoUseCase = processVideoUseCase;
             _notificationPublisher = notificationPublisher;
         }
 
@@ -23,16 +21,16 @@ namespace FiapProcessaVideo.WebApi.Controllers
         public async Task<IActionResult> ProcessVideo([FromBody] string videoKey)
         {
             Video video = Video.Load("1234", "rafa.yuji@gmail.com", "123456789", videoKey);
-            var result = await _processVideoUseCase.Execute(video);
+            // var result = await _processVideoUseCase.Execute(video);
 
-            NotificationCreatedEvent notificationCreatedEvent = new NotificationCreatedEvent();
-            notificationCreatedEvent.Id = Guid.NewGuid().ToString();
-            notificationCreatedEvent.Email = "rafa.yuji@gmail.com";
-            notificationCreatedEvent.File = videoKey;
-            notificationCreatedEvent.Status = "processed";
-            notificationCreatedEvent.UserId = "";
+            // NotificationCreatedEvent notificationCreatedEvent = new NotificationCreatedEvent();
+            // notificationCreatedEvent.Id = Guid.NewGuid().ToString();
+            // notificationCreatedEvent.Email = "rafa.yuji@gmail.com";
+            // notificationCreatedEvent.File = videoKey;
+            // notificationCreatedEvent.Status = "processed";
+            // notificationCreatedEvent.UserId = "";
             //_notificationPublisher.PublishNotificationCreated(notificationCreatedEvent);
-            return Ok(new { ZipFilePath = result });
+            return Ok("");
         }
     }
 }

@@ -1,6 +1,7 @@
 using FiapProcessaVideo.Infrastructure.Messaging.Model;
 using FiapProcessaVideo.Infrastructure.Messaging.Model.Shared;
 using FiapProcessaVideo.Infrastructure.Messaging.Mapping;
+using FiapProcessaVideo.Application.UseCases;
 using FiapProcessaVideo.Domain;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -26,15 +27,19 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
             _messagingSettings = messagingSettings.Value;
             _serviceProvider = serviceProvider;
 
-            var connectionFactory = new ConnectionFactory
-            {
-                HostName = _messagingSettings.HostName,
-                Password = _messagingSettings.Password,
-                Port = _messagingSettings.Port,
-                UserName = _messagingSettings.UserName,
-                VirtualHost = _messagingSettings.VirtualHost
-            };
+            // var connectionFactory = new ConnectionFactory
+            // {
+            //     HostName = _messagingSettings.HostName,
+            //     Password = _messagingSettings.Password,
+            //     Port = _messagingSettings.Port,
+            //     UserName = _messagingSettings.UserName,
+            //     VirtualHost = _messagingSettings.VirtualHost,
+            //     Uri = 
 
+            // };
+            ConnectionFactory connectionFactory = new ConnectionFactory();
+            connectionFactory.Uri = new Uri(_messagingSettings.Uri);
+            Console.WriteLine(_messagingSettings.Uri);
             _connection = connectionFactory.CreateConnection("microservice-fiap-processa-video-upload-subscriber-connection");
 
             _channel = _connection.CreateModel();
@@ -56,7 +61,7 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
 
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    var processVideoUseCase = scope.ServiceProvider.GetRequiredService<IProcessVideoUseCase>();
+                    var processVideoUseCase = scope.ServiceProvider.GetRequiredService<ProcessVideoUseCase>();
                     // Use processVideoUseCase here
                     if (message != null)
                     {

@@ -54,10 +54,9 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 
     return new AmazonS3Client(accessKeyId, secretAccessKey, accessToken, config);
 });
+
 //---------------------------------------------------------------------------
-
 //RabbitMQ configuration
-
 string jsonQueues = Environment.GetEnvironmentVariable("AMQP_QUEUES");
 AmqpQueues queues = new AmqpQueues();
 if (!string.IsNullOrEmpty(jsonQueues))
@@ -66,13 +65,8 @@ if (!string.IsNullOrEmpty(jsonQueues))
     Console.WriteLine(queues.FileQueue.Name);
 }
 
-string rabbitmqUsername = Environment.GetEnvironmentVariable("AMQP_USERNAME").ToString();
-string rabbitmqPassword = Environment.GetEnvironmentVariable("AMQP_PASSWORD").ToString();
-string rabbitmqHostname = Environment.GetEnvironmentVariable("AMQP_HOSTNAME").ToString();
-string rabbitmqPort = Environment.GetEnvironmentVariable("AMQP_PORT").ToString();
 // Health checks
-var connectionString = $"amqps://{rabbitmqUsername}:{rabbitmqPassword}@{rabbitmqHostname}:{rabbitmqPort}";
-//var connectionString = "amqps://pfuliwzb:EQFanpERUMVwytUkXu6cmjwZpOuWm57u@jackal.rmq.cloudamqp.com/pfuliwzb";
+var connectionString = Environment.GetEnvironmentVariable("AMQP_URI").ToString();
 
 Console.WriteLine(connectionString);
 
@@ -87,29 +81,23 @@ builder.Host.SerilogConfiguration();
 
 builder.Services.Configure<MessagingSubscriberSettings>(options =>
 {
-    options.HostName = rabbitmqHostname;
-    options.Port = Convert.ToInt32(rabbitmqPort);
-    options.UserName = rabbitmqUsername;
-    options.Password = rabbitmqPassword;
-    options.VirtualHost = Environment.GetEnvironmentVariable("AMQP_VIRTUAL_HOST").ToString();
     options.QueueName = queues.FileQueue.Name;
+    options.Uri = Environment.GetEnvironmentVariable("AMQP_URI").ToString();
 });
 
 builder.Services.Configure<MessagingPublisherSettings>(options =>
 {
-    options.HostName = rabbitmqHostname;
-    options.Port = Convert.ToInt32(rabbitmqPort);
-    options.UserName = rabbitmqUsername;
-    options.Password = rabbitmqPassword;
     options.ExchangeName = Environment.GetEnvironmentVariable("AMQP_EXCHANGE").ToString();
-    options.VirtualHost = Environment.GetEnvironmentVariable("AMQP_VIRTUAL_HOST").ToString();
     options.RoutingKeys = queues.FileQueue.RoutingKeys.ToList();
     options.QueueName = queues.FileQueue.Name;
+    options.Uri = Environment.GetEnvironmentVariable("AMQP_URI").ToString();
 });
+Console.WriteLine($"Fila: {queues.FileQueue.Name}");
+Console.WriteLine($"Routing keys: {queues.FileQueue.RoutingKeys[0]} e {queues.FileQueue.RoutingKeys[1]}");
 
-//builder.Services.AddScoped<IProcessVideoUseCase, ProcessVideoUseCase>();
-//builder.Services.AddHostedService<VideoUploadeSubscriber>();
-//builder.Services.AddScoped<NotificationPublisher>();
+builder.Services.AddScoped<ProcessVideoUseCase>();
+builder.Services.AddHostedService<VideoUploadeSubscriber>();
+builder.Services.AddScoped<NotificationPublisher>();
 //---------------------------------------------------------------------------
 
 var app = builder.Build();

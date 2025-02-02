@@ -5,28 +5,19 @@ using FFMpegCore;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.S3;
 using Amazon.S3.Model;
-using FiapProcessaVideo.Infrastructure.Messaging.Publishers;
-using FiapProcessaVideo.Infrastructure.Messaging.Model;
-using FiapProcessaVideo.Infrastructure.Messaging.Mapping;
-using FiapLanchonete.Infrastructure.Model;
 
 namespace FiapProcessaVideo.Application.UseCases
 {
-    public interface IProcessVideoUseCase
-    {
-        Task<string> Execute(Video video);
-    }
-
-    public class ProcessVideoUseCase : IProcessVideoUseCase
+    public class ProcessVideoUseCase
     {
         private readonly IAmazonS3 _s3Client;
         private readonly string _bucketName;
-        private readonly NotificationPublisher _notificationPublisher;
+        // private readonly NotificationPublisher _notificationPublisher;
 
-        public ProcessVideoUseCase(IAmazonS3 s3Client, NotificationPublisher notificationPublisher)
+        // public ProcessVideoUseCase(IAmazonS3 s3Client, NotificationPublisher notificationPublisher)
+        public ProcessVideoUseCase(IAmazonS3 s3Client)
         {
             _s3Client = s3Client;
-            _notificationPublisher = notificationPublisher;
             // Fetch bucket name from environment variables
             _bucketName = Environment.GetEnvironmentVariable("S3_BUCKET_NAME");
         }
@@ -89,18 +80,18 @@ namespace FiapProcessaVideo.Application.UseCases
 
         private void PublishProcessingStatus(Video video, string status)
         {
-            VideoMapping videoMapping = new VideoMapping();
-            VideoUploadedEvent videoUploadedEvent = videoMapping.ToRabbitMQ(video);
+            // VideoMapping videoMapping = new VideoMapping();
+            // VideoUploadedEvent videoUploadedEvent = videoMapping.ToRabbitMQ(video);
 
-            videoUploadedEvent.Status = status;
+            // videoUploadedEvent.Status = status;
 
-            PayloadVideoWrapper payloadVideoWrapper = new PayloadVideoWrapper
-            {
-                Pattern = "video.processing.status",
-                Data = videoUploadedEvent
-            };
+            // PayloadVideoWrapper payloadVideoWrapper = new PayloadVideoWrapper
+            // {
+            //     Pattern = "video.processing.status",
+            //     Data = videoUploadedEvent
+            // };
 
-            _notificationPublisher.PublishNotificationCreated(payloadVideoWrapper, status);
+            // _notificationPublisher.PublishNotificationCreated(payloadVideoWrapper, status);
         }
 
         private async Task DownloadFileFromS3Async(string bucketName, string key, string filePath)
