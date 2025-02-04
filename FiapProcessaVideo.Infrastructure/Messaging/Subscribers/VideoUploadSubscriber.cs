@@ -1,6 +1,7 @@
-using FiapProcessaVideo.Infrastructure.Messaging.Model;
 using FiapProcessaVideo.Infrastructure.Messaging.Model.Shared;
-using FiapProcessaVideo.Infrastructure.Messaging.Mapping;
+using FiapProcessaVideo.Application.Mapping;
+using FiapProcessaVideo.Application.UseCases;
+using FiapProcessaVideo.Application.Model;
 using FiapProcessaVideo.Domain;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -9,8 +10,6 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
-using FiapLanchonete.Infrastructure.Model;
-using FiapProcessaVideo.Infrastructure.Messaging.Publishers.Interfaces;
 
 namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
 {    
@@ -26,15 +25,19 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
             _messagingSettings = messagingSettings.Value;
             _serviceProvider = serviceProvider;
 
-            var connectionFactory = new ConnectionFactory
-            {
-                HostName = _messagingSettings.HostName,
-                Password = _messagingSettings.Password,
-                Port = _messagingSettings.Port,
-                UserName = _messagingSettings.UserName,
-                VirtualHost = _messagingSettings.VirtualHost
-            };
+            // var connectionFactory = new ConnectionFactory
+            // {
+            //     HostName = _messagingSettings.HostName,
+            //     Password = _messagingSettings.Password,
+            //     Port = _messagingSettings.Port,
+            //     UserName = _messagingSettings.UserName,
+            //     VirtualHost = _messagingSettings.VirtualHost,
+            //     Uri = 
 
+            // };
+            ConnectionFactory connectionFactory = new ConnectionFactory();
+            connectionFactory.Uri = new Uri(_messagingSettings.Uri);
+            Console.WriteLine(_messagingSettings.Uri);
             _connection = connectionFactory.CreateConnection("microservice-fiap-processa-video-upload-subscriber-connection");
 
             _channel = _connection.CreateModel();
@@ -52,20 +55,25 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
 
                 VideoMapping videoMapping = new VideoMapping();
                 
-                Console.WriteLine($"Message VideoUploadedEvent received with Email {message.Data.Email}");
-
-                using (var scope = _serviceProvider.CreateScope())
+                if (message != null)
                 {
-                    var processVideoUseCase = scope.ServiceProvider.GetRequiredService<IProcessVideoUseCase>();
-                    // Use processVideoUseCase here
-                    if (message != null)
+                    if (message.Pattern == "file:uploaded")
                     {
-                        Video videoDomain = videoMapping.ToDomain(message.Data);
-                        await processVideoUseCase.Execute(videoDomain);
-                    } 
-                    else 
-                    {
-                        throw new Exception($"The message received from RabbitMQ was null or empty.");
+                        Console.WriteLine($"Message VideoUploadedEvent received with Email {message.Data.Email}");
+                        using (var scope = _serviceProvider.CreateScope())
+                        {
+                            var processVideoUseCase = scope.ServiceProvider.GetRequiredService<ProcessVideoUseCase>();
+                            // Use processVideoUseCase here
+                            if (message != null)
+                            {
+                                Video videoDomain = videoMapping.ToDomain(message.Data);
+                                await processVideoUseCase.Execute(videoDomain);
+                            } 
+                            else 
+                            {
+                                throw new Exception($"The message received from RabbitMQ was null or empty.");
+                            }
+                        }
                     }
                 }
 

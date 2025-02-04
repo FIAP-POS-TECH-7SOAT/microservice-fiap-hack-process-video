@@ -1,8 +1,7 @@
-using FiapProcessaVideo.Infrastructure.Messaging.Model;
-using FiapProcessaVideo.Infrastructure.Messaging.Mapping;
+using FiapProcessaVideo.Application.Model;
 using FiapProcessaVideo.Domain;
 
-namespace FiapProcessaVideo.Infrastructure.Messaging.Mapping
+namespace FiapProcessaVideo.Application.Mapping
 {
     public class VideoMapping
     {
@@ -20,6 +19,7 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Mapping
             VideoUploadedEvent videoRabbitMq = new VideoUploadedEvent();
             videoRabbitMq.File = video.VideoKey;
             videoRabbitMq.Email = video.Email;
+            videoRabbitMq.Phone = video.Phone;
             videoRabbitMq.UserId = video.UserId;
             videoRabbitMq.Id = video.Id.ToString();
             videoRabbitMq.CreatedAt = video.CreatedAt.ToString();
