@@ -35,24 +35,38 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Publishers
 
         public void PublishNotificationCreated(PayloadVideoWrapper payloadVideo, string status)
         {
-            var payload = JsonConvert.SerializeObject(payloadVideo);
-            var byteArray = Encoding.UTF8.GetBytes(payload);
             string routingKey;
 
             switch (status)
             {
-                case "processing":
-                    routingKey = _routingKeys[0].ToString();
+                case "file:processing":
+                    routingKey = _routingKeys.ElementAt(0);
                     break;
-                case "processed":
-                    routingKey= _routingKeys[1].ToString();
+                case "file:processed":
+                    routingKey = _routingKeys.ElementAt(1);
+                    break;
+                case "file:error":
+                    routingKey = _routingKeys.ElementAt(2);
                     break;
                 default:
                     throw new Exception($"Invalid status: {status}.");
             }
 
-            _channel.BasicPublish(_exchange, routingKey, null, byteArray);
-            Console.WriteLine("NotificationCreatedEvent Published");
+            //  defining the routing key.
+            payloadVideo.Pattern = routingKey;
+
+            var payload = JsonConvert.SerializeObject(payloadVideo);
+            var byteArray = Encoding.UTF8.GetBytes(payload);
+            Console.WriteLine($"Exchange: {_exchange} - Routing Key: {routingKey}.");
+            _channel.ConfirmSelect();
+            _channel.BasicPublish(_exchange, routingKey, mandatory: true, basicProperties: null, body: byteArray);
+            if (!_channel.WaitForConfirms(TimeSpan.FromSeconds(5)))
+            {
+                Console.WriteLine("[RabbitMQ] Message not confirmed!");
+            }
+            // _channel.ExchangeDeclare(_exchange, ExchangeType.Direct, durable: true, autoDelete: false);
+            // _channel.BasicPublish(_exchange, routingKey, null, byteArray);
+            Console.WriteLine($"NotificationCreatedEvent Published Id: {payloadVideo.Data.Id}.");
         }
     }
 }

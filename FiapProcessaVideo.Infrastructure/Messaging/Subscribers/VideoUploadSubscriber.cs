@@ -55,20 +55,25 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
 
                 VideoMapping videoMapping = new VideoMapping();
                 
-                Console.WriteLine($"Message VideoUploadedEvent received with Email {message.Data.Email}");
-
-                using (var scope = _serviceProvider.CreateScope())
+                if (message != null)
                 {
-                    var processVideoUseCase = scope.ServiceProvider.GetRequiredService<ProcessVideoUseCase>();
-                    // Use processVideoUseCase here
-                    if (message != null)
+                    if (message.Pattern == "file:uploaded")
                     {
-                        Video videoDomain = videoMapping.ToDomain(message.Data);
-                        await processVideoUseCase.Execute(videoDomain);
-                    } 
-                    else 
-                    {
-                        throw new Exception($"The message received from RabbitMQ was null or empty.");
+                        Console.WriteLine($"Message VideoUploadedEvent received with Email {message.Data.Email}");
+                        using (var scope = _serviceProvider.CreateScope())
+                        {
+                            var processVideoUseCase = scope.ServiceProvider.GetRequiredService<ProcessVideoUseCase>();
+                            // Use processVideoUseCase here
+                            if (message != null)
+                            {
+                                Video videoDomain = videoMapping.ToDomain(message.Data);
+                                await processVideoUseCase.Execute(videoDomain);
+                            } 
+                            else 
+                            {
+                                throw new Exception($"The message received from RabbitMQ was null or empty.");
+                            }
+                        }
                     }
                 }
 

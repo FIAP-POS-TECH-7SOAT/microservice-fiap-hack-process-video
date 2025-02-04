@@ -19,6 +19,7 @@ namespace FiapProcessaVideo.Application.Mapping
             VideoUploadedEvent videoRabbitMq = new VideoUploadedEvent();
             videoRabbitMq.File = video.VideoKey;
             videoRabbitMq.Email = video.Email;
+            videoRabbitMq.Phone = video.Phone;
             videoRabbitMq.UserId = video.UserId;
             videoRabbitMq.Id = video.Id.ToString();
             videoRabbitMq.CreatedAt = video.CreatedAt.ToString();
