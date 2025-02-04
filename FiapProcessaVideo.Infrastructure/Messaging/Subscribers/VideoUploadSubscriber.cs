@@ -66,6 +66,7 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
                             // Use processVideoUseCase here
                             if (message != null)
                             {
+                                _channel.BasicAck(eventArgs.DeliveryTag, false);
                                 Video videoDomain = videoMapping.ToDomain(message.Data);
                                 await processVideoUseCase.Execute(videoDomain);
                             } 
@@ -76,8 +77,6 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
                         }
                     }
                 }
-
-                _channel.BasicAck(eventArgs.DeliveryTag, false);
             };
 
             _channel.BasicConsume(_messagingSettings.QueueName, false, consumer);

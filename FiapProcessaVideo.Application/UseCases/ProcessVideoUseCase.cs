@@ -95,7 +95,7 @@ namespace FiapProcessaVideo.Application.UseCases
             VideoUploadedEvent videoUploadedEvent = videoMapping.ToRabbitMQ(video);
 
             videoUploadedEvent.Status = status;
-
+            
             PayloadVideoWrapper payloadVideoWrapper = new PayloadVideoWrapper
             {
                 Pattern = $"file:{status}",
