@@ -77,10 +77,11 @@ namespace FiapProcessaVideo.Application.UseCases
                 File.Delete(zipFilePath);
                 Directory.Delete(newSnapshotsFolder, true);
 
+                video.Url = $"s3://{_bucketName}/{zipKey}";
                 // Publish "processed"
                 PublishProcessingStatus(video, "processed");
 
-                return zipKey;
+                return video.Url;
             }
             catch (Exception ex)
             {
@@ -95,6 +96,14 @@ namespace FiapProcessaVideo.Application.UseCases
             VideoUploadedEvent videoUploadedEvent = videoMapping.ToRabbitMQ(video);
 
             videoUploadedEvent.Status = status;
+            if (!string.IsNullOrEmpty(video.Url))
+            {
+                videoUploadedEvent.Url = video.Url;
+            }
+            else
+            {
+                videoUploadedEvent.Url = string.Empty;
+            }
             
             PayloadVideoWrapper payloadVideoWrapper = new PayloadVideoWrapper
             {

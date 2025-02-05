@@ -2,9 +2,7 @@
 {
     public sealed class Video
     {
-        public Guid Id { get; set; }
-
-        public string UserId { get; private set; }
+        public string Id { get; set; }
 
         public string Email { get; private set; }
 
@@ -16,15 +14,15 @@
         public DateTime ProcessedAt { get; private set; }
 
         public string Status { get ; private set; }
+        public string Url { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
         public DateTime UpdateAt { get; set; }
 
-        public Video(Guid id, string userId, string email, string phone, string videoKey, string status, DateTime processedAt, DateTime createdAt, DateTime updateAt)
+        public Video(string id, string email, string phone, string videoKey, string status, DateTime processedAt, DateTime createdAt, DateTime updateAt)
         {
             Id = id;
-            UserId = userId;
             Email = email;
             Phone = phone;
             VideoKey = videoKey;
@@ -34,11 +32,11 @@
             UpdateAt = updateAt;
         }
 
-        public static Video Load(string userId, string email, string phone, string videoKey)
+        public static Video Load(string id, string email, string phone, string videoKey)
         {
-            if (string.IsNullOrWhiteSpace(userId))
+            if (string.IsNullOrWhiteSpace(id))
             {
-                throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
+                throw new ArgumentException("Id cannot be null or empty.", nameof(id));
             }
 
             if (string.IsNullOrWhiteSpace(email))
@@ -58,12 +56,11 @@
 
             // Initialize a new Video instance using the constructor
             var video = new Video(
-                id: Guid.NewGuid(),
-                userId: userId,
+                id: id,
                 email: email,
                 phone: phone,
                 videoKey: videoKey,
-                status: "Pending", // Default status
+                status: "Waiting", // Default status
                 processedAt: DateTime.MinValue, // Set to the minimum value until processed
                 createdAt: DateTime.UtcNow,
                 updateAt: DateTime.UtcNow

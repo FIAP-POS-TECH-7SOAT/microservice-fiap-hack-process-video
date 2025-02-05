@@ -22,6 +22,9 @@ namespace FiapProcessaVideo.Application.Model
         [JsonProperty("status")]
         public string Status { get; set; }
 
+        [JsonProperty("url")]
+        public string Url { get; set; }
+
         [JsonProperty("created_at")]
         public string CreatedAt { get; set; }
 
