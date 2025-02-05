@@ -25,16 +25,6 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
             _messagingSettings = messagingSettings.Value;
             _serviceProvider = serviceProvider;
 
-            // var connectionFactory = new ConnectionFactory
-            // {
-            //     HostName = _messagingSettings.HostName,
-            //     Password = _messagingSettings.Password,
-            //     Port = _messagingSettings.Port,
-            //     UserName = _messagingSettings.UserName,
-            //     VirtualHost = _messagingSettings.VirtualHost,
-            //     Uri = 
-
-            // };
             ConnectionFactory connectionFactory = new ConnectionFactory();
             connectionFactory.Uri = new Uri(_messagingSettings.Uri);
             Console.WriteLine(_messagingSettings.Uri);
@@ -49,38 +39,41 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Subscribers
 
             consumer.Received += async (sender, eventArgs) =>
             {
-                var contentArray = eventArgs.Body.ToArray();
-                var contentString = Encoding.UTF8.GetString(contentArray);
-                var message = JsonConvert.DeserializeObject<PayloadVideoWrapper>(contentString);
-
-                VideoMapping videoMapping = new VideoMapping();
-                
-                if (message != null)
+                try
                 {
-                    if (message.Pattern == "file:uploaded")
+                    var contentArray = eventArgs.Body.ToArray();
+                    var contentString = Encoding.UTF8.GetString(contentArray);
+                    var message = JsonConvert.DeserializeObject<PayloadVideoWrapper>(contentString);
+
+                    if (message == null || message.Pattern != "file:uploaded")
                     {
-                        Console.WriteLine($"Message VideoUploadedEvent received with Email {message.Data.Email}");
-                        using (var scope = _serviceProvider.CreateScope())
-                        {
-                            var processVideoUseCase = scope.ServiceProvider.GetRequiredService<ProcessVideoUseCase>();
-                            // Use processVideoUseCase here
-                            if (message != null)
-                            {
-                                Video videoDomain = videoMapping.ToDomain(message.Data);
-                                _channel.BasicAck(eventArgs.DeliveryTag, false);
-                                await processVideoUseCase.Execute(videoDomain);
-                            } 
-                            else 
-                            {
-                                throw new Exception($"The message received from RabbitMQ was null or empty.");
-                            }
-                        }
+                        _channel.BasicReject(eventArgs.DeliveryTag, true); // Reject non-matching messages, but keep on the queue.
+                        return;
                     }
+
+                    Console.WriteLine($"Message VideoUploadedEvent received with Email {message.Data.Email}");
+
+                    using (var scope = _serviceProvider.CreateScope())
+                    {
+                        var processVideoUseCase = scope.ServiceProvider.GetRequiredService<ProcessVideoUseCase>();
+                        var videoMapping = new VideoMapping();
+
+                        Video videoDomain = videoMapping.ToDomain(message.Data);
+
+                        // Acknowledge the message before processing
+                        _channel.BasicAck(eventArgs.DeliveryTag, false);
+
+                        await processVideoUseCase.Execute(videoDomain);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error processing message: {ex.Message}");
+                    _channel.BasicReject(eventArgs.DeliveryTag, true); // Reject the message on failure, but keep on the queue.
                 }
             };
 
             _channel.BasicConsume(_messagingSettings.QueueName, false, consumer);
-
             return Task.CompletedTask;
         }
     }
