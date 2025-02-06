@@ -16,21 +16,5 @@ namespace FiapProcessaVideo.WebApi.Controllers
         {
             _notificationPublisher = notificationPublisher;
         }
-
-        [HttpPost("process")]
-        public async Task<IActionResult> ProcessVideo([FromBody] string videoKey)
-        {
-            Video video = Video.Load("1234", "rafa.yuji@gmail.com", "123456789", videoKey);
-            // var result = await _processVideoUseCase.Execute(video);
-
-            // NotificationCreatedEvent notificationCreatedEvent = new NotificationCreatedEvent();
-            // notificationCreatedEvent.Id = Guid.NewGuid().ToString();
-            // notificationCreatedEvent.Email = "rafa.yuji@gmail.com";
-            // notificationCreatedEvent.File = videoKey;
-            // notificationCreatedEvent.Status = "processed";
-            // notificationCreatedEvent.UserId = "";
-            //_notificationPublisher.PublishNotificationCreated(notificationCreatedEvent);
-            return Ok("");
-        }
     }
 }

@@ -9,7 +9,7 @@ namespace FiapProcessaVideo.Application.Mapping
 
         public Video ToDomain(VideoUploadedEvent videoUploadedEvent)
         {
-            Video videoDomain = Video.Load(videoUploadedEvent.Id, videoUploadedEvent.Email, videoUploadedEvent.Phone, videoUploadedEvent.File);
+            Video videoDomain = Video.Load(videoUploadedEvent.Id, videoUploadedEvent.UserId, videoUploadedEvent.Email, videoUploadedEvent.Phone, videoUploadedEvent.File);
             
             return videoDomain;
         }
@@ -23,6 +23,7 @@ namespace FiapProcessaVideo.Application.Mapping
             videoRabbitMq.Status = video.Status;
             videoRabbitMq.Url = video.Url;
             videoRabbitMq.Id = video.Id;
+            videoRabbitMq.UserId = video.UserId;
             videoRabbitMq.CreatedAt = video.CreatedAt.ToString();
             videoRabbitMq.UpdatedAt = video.UpdateAt.ToString();
 

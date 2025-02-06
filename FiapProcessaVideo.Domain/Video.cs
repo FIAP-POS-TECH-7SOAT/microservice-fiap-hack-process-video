@@ -3,6 +3,7 @@
     public sealed class Video
     {
         public string Id { get; set; }
+        public string UserId { get; set; }
 
         public string Email { get; private set; }
 
@@ -20,9 +21,10 @@
 
         public DateTime UpdateAt { get; set; }
 
-        public Video(string id, string email, string phone, string videoKey, string status, DateTime processedAt, DateTime createdAt, DateTime updateAt)
+        public Video(string id, string userId, string email, string phone, string videoKey, string status, DateTime processedAt, DateTime createdAt, DateTime updateAt)
         {
             Id = id;
+            UserId = userId;
             Email = email;
             Phone = phone;
             VideoKey = videoKey;
@@ -32,7 +34,7 @@
             UpdateAt = updateAt;
         }
 
-        public static Video Load(string id, string email, string phone, string videoKey)
+        public static Video Load(string id, string userId, string email, string phone, string videoKey)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -57,6 +59,7 @@
             // Initialize a new Video instance using the constructor
             var video = new Video(
                 id: id,
+                userId: userId,
                 email: email,
                 phone: phone,
                 videoKey: videoKey,
