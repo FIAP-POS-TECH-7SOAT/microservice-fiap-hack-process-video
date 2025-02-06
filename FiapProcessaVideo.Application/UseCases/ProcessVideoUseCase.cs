@@ -158,8 +158,7 @@ namespace FiapProcessaVideo.Application.UseCases
             {
                 BucketName = bucketName,
                 Key = key,
-                FilePath = filePath,
-                CannedACL = S3CannedACL.PublicRead // Make file publicly accessible
+                FilePath = filePath
             };
 
             await _s3Client.PutObjectAsync(putRequest);
