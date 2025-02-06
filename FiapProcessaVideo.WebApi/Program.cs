@@ -63,7 +63,6 @@ AmqpQueues queues = new AmqpQueues();
 if (!string.IsNullOrEmpty(jsonQueues))
 {
     queues = JsonConvert.DeserializeObject<AmqpQueues>(jsonQueues);
-    Console.WriteLine(queues.FileQueue.Name);
 }
 
 // Health checks
@@ -93,8 +92,9 @@ builder.Services.Configure<MessagingPublisherSettings>(options =>
     options.QueueName = queues.FileQueue.Name;
     options.Uri = Environment.GetEnvironmentVariable("AMQP_URI").ToString();
 });
+
 Console.WriteLine($"Fila: {queues.FileQueue.Name}");
-Console.WriteLine($"Routing keys: {queues.FileQueue.RoutingKeys[0]} e {queues.FileQueue.RoutingKeys[1]}");
+Console.WriteLine($"Routing keys: {queues.FileQueue.RoutingKeys[0]}, {queues.FileQueue.RoutingKeys[1]} and {queues.FileQueue.RoutingKeys[2]}");
 
 builder.Services.AddScoped<ProcessVideoUseCase>();
 builder.Services.AddHostedService<VideoUploadeSubscriber>();

@@ -109,7 +109,7 @@ namespace FiapProcessaVideo.Application.UseCases
             
             PayloadVideoWrapper payloadVideoWrapper = new PayloadVideoWrapper
             {
-                Pattern = $"file:{status}",
+                Pattern = $"upload:{status}", //  define 
                 Data = videoUploadedEvent
             };
 

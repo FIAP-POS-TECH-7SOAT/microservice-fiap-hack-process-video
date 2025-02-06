@@ -39,13 +39,13 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Publishers
 
             switch (status)
             {
-                case "file:processed":
+                case "upload:processed":
                     routingKey = _routingKeys.ElementAt(0);
                     break;
-                case "file:processing":
+                case "upload:processing":
                     routingKey = _routingKeys.ElementAt(1);
                     break;
-                case "file:error":
+                case "upload:error":
                     routingKey = _routingKeys.ElementAt(2);
                     break;
                 default:
