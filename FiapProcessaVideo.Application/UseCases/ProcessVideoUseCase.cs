@@ -15,6 +15,7 @@ namespace FiapProcessaVideo.Application.UseCases
     {
         private readonly IAmazonS3 _s3Client;
         private readonly string _bucketName;
+        private readonly string _region;
         private readonly IMessagePublisher _notificationPublisher;
 
         public ProcessVideoUseCase(IAmazonS3 s3Client, IMessagePublisher notificationPublisher)
@@ -23,6 +24,7 @@ namespace FiapProcessaVideo.Application.UseCases
             _notificationPublisher = notificationPublisher;
             // Fetch bucket name from environment variables
             _bucketName = Environment.GetEnvironmentVariable("S3_BUCKET_NAME");
+            _region = Environment.GetEnvironmentVariable("AWS_REGION");
         }
 
         public async Task<string> Execute(Video video)
@@ -77,7 +79,7 @@ namespace FiapProcessaVideo.Application.UseCases
                 File.Delete(zipFilePath);
                 Directory.Delete(newSnapshotsFolder, true);
 
-                video.Url = $"s3://{_bucketName}/{zipKey}";
+                video.Url = $"https://{_bucketName}.s3.{_region}.amazonaws.com/{zipKey}";
                 // Publish "processed"
                 PublishProcessingStatus(video, "processed");
 
@@ -156,7 +158,8 @@ namespace FiapProcessaVideo.Application.UseCases
             {
                 BucketName = bucketName,
                 Key = key,
-                FilePath = filePath
+                FilePath = filePath,
+                CannedACL = S3CannedACL.PublicRead // Make file publicly accessible
             };
 
             await _s3Client.PutObjectAsync(putRequest);
