@@ -58,12 +58,7 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
 
 //---------------------------------------------------------------------------
 //RabbitMQ configuration
-string jsonQueues = Environment.GetEnvironmentVariable("AMQP_QUEUES");
-AmqpQueues queues = new AmqpQueues();
-if (!string.IsNullOrEmpty(jsonQueues))
-{
-    queues = JsonConvert.DeserializeObject<AmqpQueues>(jsonQueues);
-}
+string queue = Environment.GetEnvironmentVariable("AMQP_QUEUE");
 
 // Health checks
 var connectionString = Environment.GetEnvironmentVariable("AMQP_URI").ToString();
@@ -81,20 +76,18 @@ builder.Host.SerilogConfiguration();
 
 builder.Services.Configure<MessagingSubscriberSettings>(options =>
 {
-    options.QueueName = queues.FileQueue.Name;
+    options.QueueName = queue;
     options.Uri = Environment.GetEnvironmentVariable("AMQP_URI").ToString();
 });
 
 builder.Services.Configure<MessagingPublisherSettings>(options =>
 {
     options.ExchangeName = Environment.GetEnvironmentVariable("AMQP_EXCHANGE").ToString();
-    options.RoutingKeys = queues.FileQueue.RoutingKeys.ToList();
-    options.QueueName = queues.FileQueue.Name;
+    options.QueueName = queue;
     options.Uri = Environment.GetEnvironmentVariable("AMQP_URI").ToString();
 });
 
-Console.WriteLine($"Fila: {queues.FileQueue.Name}");
-Console.WriteLine($"Routing keys: {queues.FileQueue.RoutingKeys[0]}, {queues.FileQueue.RoutingKeys[1]} and {queues.FileQueue.RoutingKeys[2]}");
+Console.WriteLine($"Fila: {queue}");
 
 builder.Services.AddScoped<ProcessVideoUseCase>();
 builder.Services.AddHostedService<VideoUploadeSubscriber>();
