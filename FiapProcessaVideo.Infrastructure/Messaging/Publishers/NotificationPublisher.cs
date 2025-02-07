@@ -33,25 +33,8 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Publishers
             _channel = _connection.CreateModel();
         }
 
-        public void PublishNotificationCreated(PayloadVideoWrapper payloadVideo, string status)
+        public void PublishNotificationCreated(PayloadVideoWrapper payloadVideo, string routingKey)
         {
-            string routingKey;
-
-            switch (status)
-            {
-                case "upload:processed":
-                    routingKey = _routingKeys.ElementAt(0);
-                    break;
-                case "upload:processing":
-                    routingKey = _routingKeys.ElementAt(1);
-                    break;
-                case "upload:error":
-                    routingKey = _routingKeys.ElementAt(2);
-                    break;
-                default:
-                    throw new Exception($"Invalid status: {status}.");
-            }
-
             //  defining the routing key.
             payloadVideo.Pattern = routingKey;
 
