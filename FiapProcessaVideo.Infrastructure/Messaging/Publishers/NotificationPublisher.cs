@@ -27,7 +27,6 @@ namespace FiapProcessaVideo.Infrastructure.Messaging.Publishers
             connectionFactory.Uri = new Uri(_messagingSettings.Uri);
 
             _exchange = _messagingSettings.ExchangeName;
-            _routingKeys = _messagingSettings.RoutingKeys;
 
             _connection = connectionFactory.CreateConnection("microservice-fiap-processa-video-notification-publisher-connection");
             _channel = _connection.CreateModel();
